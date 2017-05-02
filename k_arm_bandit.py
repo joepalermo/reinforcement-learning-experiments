@@ -23,10 +23,10 @@ class Arm:
 
 class Bandit:
 
-    def __init__(self, k, stationary=True):
+    def __init__(self, k, initial_q_values=0, stationary=True):
         self.k = k
         self.arms = [Arm() for i in range(k)]
-        self.q_values = [0 for i in range(k)]
+        self.q_values = [initial_q_values for i in range(k)]
         self.count = [0 for i in range(k)]
         self.stationary = stationary
 
@@ -59,10 +59,10 @@ class Bandit:
         # update q value for the selected action
         self.q_values[action] = q + alpha * (reward - q)
 
-def run_bandit_sims(k, epsilon, alpha, stationary, num_bandits, num_steps):
+def run_bandit_sims(k, initial_q_values, epsilon, alpha, stationary, num_bandits, num_steps):
     bandit_rewards = []
     for bandit_i in range(num_bandits):
-        bandit = Bandit(k, stationary)
+        bandit = Bandit(k, initial_q_values, stationary)
         step_rewards = []
         for step_i in range(num_steps):
             if random.random() > epsilon:
@@ -81,6 +81,7 @@ def run_bandit_sims(k, epsilon, alpha, stationary, num_bandits, num_steps):
 # set parameters for simulations -----------------------------------------------
 
 k = 10
+initial_q_values = 0
 epsilon = 0.1
 alpha = None
 
@@ -89,24 +90,29 @@ num_bandits = 2000
 num_steps = 1000
 
 # plot something
-# avg_rewards = run_bandit_sims(k, epsilon, alpha, stationary, num_bandits, num_steps)
+# avg_rewards = run_bandit_sims(k, initial_q_values, epsilon, alpha, stationary, num_bandits, num_steps)
 # plt.plot(avg_rewards, color='b')
 
-# figure something...
-# avg_rewards = run_bandit_sims(k, 0, alpha, stationary, num_bandits, num_steps)
+# figure 2.2
+# avg_rewards = run_bandit_sims(k, initial_q_values, 0, alpha, stationary, num_bandits, num_steps)
 # plt.plot(avg_rewards, color='b')
-# avg_rewards = run_bandit_sims(k, 0.1, alpha, stationary, num_bandits, num_steps)
+# avg_rewards = run_bandit_sims(k, initial_q_values, 0.1, alpha, stationary, num_bandits, num_steps)
 # plt.plot(avg_rewards, color='g')
-# avg_rewards = run_bandit_sims(k, 0.01, alpha, stationary, num_bandits, num_steps)
+# avg_rewards = run_bandit_sims(k, initial_q_values, 0.01, alpha, stationary, num_bandits, num_steps)
 # plt.plot(avg_rewards, color='r')
 
 #
 # # exercise 2.3
-stationary = True
-avg_rewards = run_bandit_sims(k, epsilon, alpha, False, num_bandits, num_steps)
-plt.plot(avg_rewards, color='g')
-avg_rewards = run_bandit_sims(k, epsilon, 0.1, False, num_bandits, num_steps)
-plt.plot(avg_rewards, color='r')
+# avg_rewards = run_bandit_sims(k, initial_q_values, epsilon, alpha, False, num_bandits, num_steps)
+# plt.plot(avg_rewards, color='g')
+# avg_rewards = run_bandit_sims(k, initial_q_values, epsilon, 0.1, False, num_bandits, num_steps)
+# plt.plot(avg_rewards, color='r')
 
+# figure 2.3
+alpha = 0.1
+avg_rewards = run_bandit_sims(k, initial_q_values, epsilon, alpha, stationary, num_bandits, num_steps)
+plt.plot(avg_rewards, color='g')
+avg_rewards = run_bandit_sims(k, 5, 0, alpha, stationary, num_bandits, num_steps)
+plt.plot(avg_rewards, color='r')
 
 plt.show()
