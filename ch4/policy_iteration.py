@@ -1,7 +1,8 @@
 # some of this code is copied and/or inspired by https://github.com/kkleidal
 # https://github.com/kkleidal/SuttonRLExercises/blob/master/chapters/4/ex4_5.py
 
-debug = False
+debug = True
+max_cars = 10
 
 from math import factorial, e
 
@@ -14,12 +15,12 @@ def poisson_truncated(expected, actual, maximum):
     else:
         return poisson(expected, actual)
 
-def generate_states(max_cars=20):
+def generate_states():
     for cars_1 in xrange(1,max_cars+1):
         for cars_2 in xrange(1,max_cars+1):
             yield (cars_1, cars_2)
 
-def generate_actions(state, max_cars=20):
+def generate_actions(state):
     (cars_1, cars_2) = state
     # no more than 5 cars can be moved across locations overnight
     min_action = min(5, cars_2)
@@ -39,7 +40,7 @@ def generate_paired_outcomes(limits):
         for n_2 in xrange(0, limits[1]+1):
             yield (n_1, n_2)
 
-def generate_outcomes(state, action, expected_rentals, expected_returns, max_cars=20):
+def generate_outcomes(state, action, expected_rentals, expected_returns):
     (rent_1, rent_2) = expected_rentals
     (return_1, return_2) = expected_returns
     (cars_1, cars_2) = state
@@ -74,22 +75,22 @@ def generate_outcomes(state, action, expected_rentals, expected_returns, max_car
 # Construct the conditional probability distribution, p(s',r|s,a).
 # Represent it as a dictionary mapping conditions (s,a) to dictionaries
 # each of which maps (next state, reward) pairs to a probability
-def construct_p(max_cars=20, expected_rentals=(3,4), expected_returns=(3,2)):
+def construct_p(expected_rentals=(3,4), expected_returns=(3,2)):
     p = dict()
     # for all states
     i = 0
-    for state in generate_states(max_cars):
+    for state in generate_states():
         # counter to measure progress towards completion
         i += 1
         print i
         # for all valid actions from a given state
-        for action in generate_actions(state, max_cars):
+        for action in generate_actions(state):
             # construct the condition
             condition = (state, action)
             # compute the conditional probability distribution for a given condition
             p_cond = dict()
             p[condition] = p_cond
-            for outcome, p_outcome in generate_outcomes(state, action, expected_rentals, expected_returns, max_cars):
+            for outcome, p_outcome in generate_outcomes(state, action, expected_rentals, expected_returns):
                     # print statements for debugging
                     if debug:
                         print "outcome: " + str(outcome) + ", p_outcome: " + str(p_outcome)
@@ -100,31 +101,31 @@ def construct_p(max_cars=20, expected_rentals=(3,4), expected_returns=(3,2)):
     return p
 
 # return an equiprobable policy
-def initialize_policy(max_cars=20):
+def initialize_policy():
     policy = dict()
-    for state in generate_states(max_cars):
+    for state in generate_states():
         policy[state] = dict()
         (cars_1, cars_2) = state
         # no more than 5 cars can be moved across locations overnight
         min_action = - min(5, cars_2)
         max_action = min(5, cars_1)
         # for all valid actions from a given state
-        for a in generate_actions(state, max_cars):
+        for a in generate_actions(state):
             policy[state][a] = 1.0 / max_action+1 - (min_action)
 
-def initialize_policy_value(max_cars=20):
+def initialize_policy_value():
     policy_value = dict()
-    for state in generate_states(max_cars):
+    for state in generate_states():
         policy_value[state] = 0
     return policy_value
 
-def policy_evaluation(p, policy, theta = 0.01, max_cars=20):
-    policy_value = initialize_policy_value(max_cars)
+def policy_evaluation(p, policy, theta = 0.01):
+    policy_value = initialize_policy_value()
     while True:
         max_delta = 0
-        for state in generate_states(max_cars):
+        for state in generate_states():
             v = policy_value(state)
-            v_update = state_update(p, policy_value, state, max_cars)
+            v_update = state_update(p, policy_value, state)
             delta = abs(v - v_update)
             if delta > max_delta:
                 max_delta = delta
@@ -132,12 +133,12 @@ def policy_evaluation(p, policy, theta = 0.01, max_cars=20):
             break
     return policy_value
 
-def state_update(p, policy_value, state, gamma = 0.9, max_cars=20):
+def state_update(p, policy_value, state, gamma = 0.9):
     (cars_1, cars_2) = state
     value_sum = 0
-    for action in generate_actions(state, max_cars):
+    for action in generate_actions(state):
         p_cond = p[(state, action)]
-        for (outcome, _) in generate_outcomes(state, action, max_cars):
+        for (outcome, _) in generate_outcomes(state, action):
             next_state = outcome[0]
             reward = outcome[1]
             value_sum += policy[state][action] * p_cond[outcome] * (reward + gamma * policy_value[next_state])
@@ -145,21 +146,20 @@ def state_update(p, policy_value, state, gamma = 0.9, max_cars=20):
     return value_sum
 
 
-def policy_improvement(policy, policy_value, max_cars=20):
+def policy_improvement(policy, policy_value):
     pass
     # todo
     return policy, policy_stable
 
 def main():
-    max_cars=10
-    p = construct_p(max_cars)
+    p = construct_p()
 
     # represent a policy as a map from state to a map from action to probability
-    # policy = initialize_policy(max_cars)
+    # policy = initialize_policy()
     # policy_stable = False
     # while not policy_stable:
     #     policy_value = policy_evaluation(p, policy)
-    #     policy, policy_stable = policy_improvement(policy, policy_value, max_cars)
+    #     policy, policy_stable = policy_improvement(policy, policy_value)
     #
     # print 'Behold, the optimal policy...'
     # print policy
