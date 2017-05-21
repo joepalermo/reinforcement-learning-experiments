@@ -139,7 +139,7 @@ num_steps = 1000
 # plt.plot(avg_rewards, color='r')
 
 # figure 2.4
-alpha 0.1
+alpha = 0.1
 ucb = True
 avg_rewards = run_bandit_sims(k, initial_q_values, 0.1, alpha, False, stationary, num_bandits, num_steps)
 plt.plot(avg_rewards, color='g')
