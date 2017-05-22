@@ -9,16 +9,21 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from math import factorial, e
 
+# global variables -------------------------------------------------------------
+
 debug = False
-max_cars = 20
-max_cars_move = 5
+max_cars = 5
+max_car_movement = 5
 move_penalty = 2
 rental_reward = 10
 expected_rentals=(3,4)
 expected_returns=(3,2)
 
-def isclose(a, b, rel_tol=1e-3, abs_tol=1e-3):
-    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+# generic utilities ------------------------------------------------------------
+
+# compare floats for approximate equality
+def isclose(a, b, abs_tol=1e-10):
+    return abs(a-b) <= abs_tol
 
 def poisson(expected, actual):
     return (float(expected) ** actual / factorial(actual)) * e ** (-expected)
@@ -29,25 +34,20 @@ def poisson_truncated(expected, actual, maximum):
     else:
         return poisson(expected, actual)
 
-def visualize_value_function(policy_value):
-    states = [state for state in generate_states()]
-    state_values = [policy_value[state] for state in states]
-    state_values_arr = np.array(state_values)
-    state_values_matrix = np.reshape(state_values_arr, (max_cars+1, max_cars+1))
-    print "min: " + str(state_values_matrix.min()) + ", max: " + str(state_values_matrix.max())
-    plt.imshow(state_values_matrix, cmap='hot', origin='lower')
-    plt.show()
+# generators -------------------------------------------------------------------
 
+# a generator that produces all possible states
 def generate_states():
     for cars_1 in xrange(0,max_cars+1):
         for cars_2 in xrange(0,max_cars+1):
             yield (cars_1, cars_2)
 
+# a generator that given a state produces all possible legal actions
 def generate_actions(state):
     (cars_1, cars_2) = state
     # no more than 5 cars can be moved across locations overnight
-    min_action = min(max_cars_move, cars_2)
-    max_action = min(max_cars_move, cars_1)
+    min_action = min(max_car_movement, cars_2)
+    max_action = min(max_car_movement, cars_1)
     for from_2_to_1 in range(1, min_action+1):
         if from_2_to_1 + cars_1 > max_cars:
             break
@@ -58,12 +58,19 @@ def generate_actions(state):
         yield from_1_to_2
     yield 0
 
+# a generator that given a sequence type of length 2, will produce all pairs of
+# values that can be produced by combining values in the range from 0 to the
+# the values in the sequence type
 def generate_paired_outcomes(limits):
     for n_1 in xrange(0, limits[0]+1):
         for n_2 in xrange(0, limits[1]+1):
             yield (n_1, n_2)
 
-def generate_outcomes(state, action):
+# a generator that given a state and action will enumerate all possibilities for
+# the environment's response and return (outcome, probability) pairs. Note that
+# the value probability is not the probability of the outcome, since some
+# outcomes can be generated in more than one way
+def generate_possibilities(state, action):
     (rent_1, rent_2) = expected_rentals
     (return_1, return_2) = expected_returns
     (cars_1, cars_2) = state
@@ -84,18 +91,19 @@ def generate_outcomes(state, action):
             # compute s' and r
             s_prime = (cars_remaining[0] + n_return_1, cars_remaining[1] + n_return_2)
             reward = - move_penalty * abs(action) + (n_rent_1 + n_rent_2) * rental_reward
-            # return the outcome, and its probability
+            # return the outcome, and the probability of this contingency
             outcome = (s_prime, reward)
-            p_outcome = p_rent * p_return
+            probability = p_rent * p_return
             if debug:
                 print
                 print "condition: " + str((state, action))
                 print "rentals: " + str((n_rent_1, n_rent_2))
                 print "returns: " + str((n_return_1, n_return_2))
-                print "outcome: " + str(outcome) + ", p_outcome: " + str(p_outcome)
+                print "outcome: " + str(outcome) + ", probability: " + str(probability)
                 print
-            yield outcome, p_outcome
+            yield outcome, probability
 
+# core functionality -----------------------------------------------------------
 
 # Construct the conditional probability distribution, p(s',r|s,a).
 # Represent it as a dictionary mapping conditions (s,a) to dictionaries
@@ -114,15 +122,15 @@ def construct_p():
             # accumulate total probability over outcomes to ensure that p
             # forms a valid probability distribution
             total_prob = 0
-            for outcome, p_outcome in generate_outcomes(state, action):
+            for outcome, probability in generate_possibilities(state, action):
                 p_cond[outcome] = 0
-            for outcome, p_outcome in generate_outcomes(state, action):
-                total_prob += p_outcome
+            for outcome, probability in generate_possibilities(state, action):
+                total_prob += probability
                 # assign probability to the conditional outcome
-                p_cond[outcome] += p_outcome
+                p_cond[outcome] += probability
             if not isclose(total_prob, 1.0):
                 raise Exception("p doesn't form a probability distribution")
-    print "done construction"
+    print "done constructing the environment's probability distribution"
     return p
 
 # return an equiprobable policy
@@ -132,8 +140,8 @@ def initialize_policy():
         policy[state] = dict()
         (cars_1, cars_2) = state
         # no more than 5 cars can be moved across locations overnight
-        min_action = - min(max_cars_move, cars_2)
-        max_action = min(max_cars_move, cars_1)
+        min_action = - min(max_car_movement, cars_2)
+        max_action = min(max_car_movement, cars_1)
         # for all valid actions from a given state
         actions = [a for a in generate_actions(state)]
         for a in actions:
@@ -147,7 +155,21 @@ def initialize_policy_value():
         policy_value[state] = 0
     return policy_value
 
-# given a model of the environment and a policy, perform policy evaluation
+# takes as input a value function (represented as a dictionary mapping states
+# to expected value) and displays a visualization of the value function as a
+# heatmap
+def visualize_value_function(policy_value):
+    states = [state for state in generate_states()]
+    state_values = [policy_value[state] for state in states]
+    state_values_arr = np.array(state_values)
+    state_values_matrix = np.reshape(state_values_arr, (max_cars+1, max_cars+1))
+    print "min state value: " + str(state_values_matrix.min()) + \
+          ", max state value: " + str(state_values_matrix.max())
+    plt.imshow(state_values_matrix, cmap='hot', origin='lower')
+    plt.show()
+
+# takes as input a policy, performs policy evaluation and returns the value
+# function for the policy
 def policy_evaluation(policy, theta = 0.5):
     policy_value = initialize_policy_value()
     while True:
@@ -158,23 +180,22 @@ def policy_evaluation(policy, theta = 0.5):
             delta = abs(v - v_update)
             if delta > max_delta:
                 max_delta = delta
-        print max_delta
+        if debug:
+            print "max delta: " + str(max_delta)
         if max_delta < theta:
             break
     return policy_value
 
-# given a model of the environment, a value function for a given policy, and
-# some state, update the policy value function for that state
+# given a policy, a value function for the policy, and a particular state,
+# update the value function for that state. Also return the value of the update
 def state_update(policy, policy_value, state, gamma = 0.9):
     (cars_1, cars_2) = state
     value_sum = 0
     for action in generate_actions(state):
-        total_outcome_prob = 0
         p_cond = p[(state, action)]
         for outcome in p_cond:
             next_state = outcome[0]
             reward = outcome[1]
-            total_outcome_prob += p_cond[outcome]
             value_sum += policy[state][action] * p_cond[outcome] * (reward + gamma * policy_value[next_state])
     policy_value[state] = value_sum
     return value_sum
@@ -200,20 +221,19 @@ def policy_improvement(policy, policy_value, gamma = 0.9):
             for outcome in p_cond:
                 next_state = outcome[0]
                 reward = outcome[1]
-
                 action_value += p_cond[outcome] * (reward + gamma * policy_value[next_state])
             # if this action is the best action, take note of that
             best_action_value = best_action[1]
             if action_value > best_action_value:
                 best_action = (action_i, action_value)
         # give the best action probability 1 in the new policy
-        best_action_i = best_action[0]
-        best_action = actions[best_action_i]
+        best_action_index = best_action[0]
+        best_action = actions[best_action_index]
         new_policy[state][best_action] = 1.0
-        # check whether the new policy is different from the prior policy
-        for action in generate_actions(state):
-            if policy[state][action] != new_policy[state][action]:
-                policy_stable = False
+        # check whether the new policy is different from the prior policy, and
+        # update policy stability accordingly
+        if policy[state][best_action] != 1.0:
+            policy_stable = False
     return new_policy, policy_stable
 
 def main():
@@ -221,15 +241,12 @@ def main():
     policy = initialize_policy()
     policy_stable = False
     while not policy_stable:
-        print "policy iter"
         policy_value = policy_evaluation(policy)
         policy, policy_stable = policy_improvement(policy, policy_value)
     visualize_value_function(policy_value)
     print 'Behold, the optimal policy... ' + str(policy)
 
-
-
-# construct the probability distribution
+# construct the environment's probability distribution
 p = construct_p()
-
+# find the optimal policy
 main()
