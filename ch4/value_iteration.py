@@ -23,17 +23,20 @@ def flip_coin():
     else:
         return "tails"
 
+
+# core functionality -------------------------------------------------------------------
+
 def generate_actions(state):
     max_action = min(state, max_state - state)
     for a in xrange(1, max_action+1):
         yield a
 
-        
-
-# core functionality -------------------------------------------------------------------
-
 def value_function_init():
-    pass
+    v = dict()
+    for state in xrange(0, max_state):
+        v[state] = 0
+    return v
+
 
 def state_update():
     pass
