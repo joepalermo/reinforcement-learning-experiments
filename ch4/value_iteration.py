@@ -17,19 +17,28 @@ p_heads = 0.25
 def is_close(a, b, abs_tol=1e-10):
     return abs(a-b) <= abs_tol
 
-def flip_coin():
-    if random.random() <= p_heads:
-        return "heads"
-    else:
-        return "tails"
-
-
 # core functionality -------------------------------------------------------------------
+    
 
 def generate_actions(state):
     max_action = min(state, max_state - state)
     for a in xrange(1, max_action+1):
         yield a
+
+def generate_outcomes(state, action):
+    for result in ['heads', 'tails']:
+        if result == 'heads':
+            next_state = state + action
+            if next_state == max_state:
+                reward = 1
+            else:
+                reward = 0
+            probability = p_heads
+        else:
+            next_state = state - action
+            reward = 0
+            probability = 1 - p_heads
+        yield (next_state, reward, probability)
 
 def value_function_init():
     v = dict()
@@ -37,9 +46,16 @@ def value_function_init():
         v[state] = 0
     return v
 
-
-def state_update():
-    pass
+def state_update(v, state, gamma=0.9):
+    max_value = 0
+    # find the max value over actions from a given state
+    for action in generate_actions(state):
+        value = 0
+        for (next_state, reward, p_outcome) in generate_outcomes(state, action):
+            value += p_oucome * (reward + gamma * v[next_state])
+        if value > max_value:
+            max_value = value
+    return max_value
 
 def construct_optimal_policy(vf):
     pass
