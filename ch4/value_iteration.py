@@ -79,7 +79,7 @@ def construct_optimal_policy(v):
             policy[state][max_action] = 1
     return policy
 
-def value_iteration(theta = 0.5):
+def value_iteration(theta = 0.01):
     v = value_function_init()
     # perform value iteration
     i = 0
@@ -97,6 +97,16 @@ def value_iteration(theta = 0.5):
             break
         i += 1
     optimal_policy = construct_optimal_policy(v)
-    return optimal_policy
+    return optimal_policy, v
+
+def visualize_value_function(v):
+    data_to_plot = [v[state] for state in generate_states()]
+    plt.plot(data_to_plot)
+    plt.show()
+
+def main():
+    opt_policy, v = value_iteration()
+    visualize_value_function(v)
+
     
-value_iteration()
+main()
