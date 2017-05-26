@@ -42,7 +42,7 @@ def generate_outcomes(state, action):
 
 def value_function_init():
     v = dict()
-    for state in xrange(0, max_state):
+    for state in xrange(0, max_state+1):
         v[state] = 0
     return v
 
