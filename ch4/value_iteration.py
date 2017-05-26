@@ -104,9 +104,20 @@ def visualize_value_function(v):
     plt.plot(data_to_plot)
     plt.show()
 
+def visualize_policy(policy):
+    data_to_plot = []
+    for state in generate_states():
+        actions = list(generate_actions(state))
+        if actions:
+            action_probabilities = [policy[state][action] for action in actions]
+            chosen_action_i = action_probabilities.index(max(action_probabilities))
+            data_to_plot.append(actions[chosen_action_i])
+    plt.plot(data_to_plot)
+    plt.show()
+
 def main():
     opt_policy, v = value_iteration()
     visualize_value_function(v)
-
+    visualize_policy(opt_policy)
     
 main()
