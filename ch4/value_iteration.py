@@ -10,14 +10,9 @@ import matplotlib.pyplot as plt
 
 max_state = 100
 p_heads = 0.25
+gamma=0.9
 
-# generic utilities ------------------------------------------------------------
-
-# compare floats for approximate equality
-def is_close(a, b, abs_tol=1e-10):
-    return abs(a-b) <= abs_tol
-
-# core functionality -------------------------------------------------------------------
+# generators -------------------------------------------------------------------
 
 def generate_states():
     for s in xrange(0, max_state+1):
@@ -43,40 +38,65 @@ def generate_outcomes(state, action):
             probability = 1 - p_heads
         yield (next_state, reward, probability)
 
+# core functionality -----------------------------------------------------------
+
 def value_function_init():
     v = dict()
     for state in generate_states():
         v[state] = 0
     return v
 
-def state_update(v, state, gamma=0.9):
+def state_update(v, state):
     max_value = 0
     # find the max value over actions from a given state
     for action in generate_actions(state):
         value = 0
         for (next_state, reward, p_outcome) in generate_outcomes(state, action):
-            value += p_oucome * (reward + gamma * v[next_state])
+            value += p_outcome * (reward + gamma * v[next_state])
         if value > max_value:
             max_value = value
     return max_value
 
-def construct_optimal_policy(vf):
-    pass
+def construct_optimal_policy(v):
+    policy = dict()
+    for state in generate_states():
+        policy[state] = dict()
+        actions = list(generate_actions(state))
+        # keep track of the current best action from a given state
+        max_action_i = -1
+        max_action_value = 0
+        for action_i, action in enumerate(actions):
+            # by default let the policy map actions to zero probability
+            policy[state][action] = 0
+            action_value = 0
+            for (next_state, reward, p_outcome) in generate_outcomes(state, action):
+                action_value += p_outcome * (reward + gamma * v[next_state])
+            if action_value > max_action_value:
+                max_action_i = action_i
+                max_action_value = action_value
+        if actions:
+            max_action = actions[max_action_i]
+            policy[state][max_action] = 1
+    return policy
 
 def value_iteration(theta = 0.5):
     v = value_function_init()
     # perform value iteration
+    i = 0
     while True:
+        print "value iteration # " + str(i)
         max_delta = 0
         for state in generate_states():
-            v = v[state]
-            v[state] = state_update(state)
-            delta = abs(v - v[state])
+            state_value = v[state]
+            v[state] = state_update(v, state)
+            delta = abs(state_value - v[state])
             if delta > max_delta:
                 max_delta = delta
+        print "max delta: " + str(max_delta)
         if max_delta < theta:
             break
-    optimal_policy = construct_optimal_policy(vf)
+        i += 1
+    optimal_policy = construct_optimal_policy(v)
     return optimal_policy
     
-#value_iteration()
+value_iteration()
