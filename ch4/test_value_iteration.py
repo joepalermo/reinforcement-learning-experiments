@@ -18,5 +18,14 @@ assert len(list(generate_actions(55))) == 45
 assert len(list(generate_actions(99))) == 1
 assert len(list(generate_actions(100))) == 0
 
+# test outcome generator
+for state in xrange(0,max_state):
+    for action in generate_actions(state):
+        total_prob = 0
+        for (next_state, reward, probability) in generate_outcomes(state, action):
+            total_prob += probability
+        assert total_prob == 1.0
+
+# test value function initialization
 v = value_function_init()
 assert len(v) == max_state + 1
