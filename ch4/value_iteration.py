@@ -18,7 +18,10 @@ def is_close(a, b, abs_tol=1e-10):
     return abs(a-b) <= abs_tol
 
 # core functionality -------------------------------------------------------------------
-    
+
+def generate_states():
+    for s in xrange(0, max_state+1):
+        yield s
 
 def generate_actions(state):
     max_action = min(state, max_state - state)
@@ -42,7 +45,7 @@ def generate_outcomes(state, action):
 
 def value_function_init():
     v = dict()
-    for state in xrange(0, max_state+1):
+    for state in generate_states():
         v[state] = 0
     return v
 
@@ -60,13 +63,12 @@ def state_update(v, state, gamma=0.9):
 def construct_optimal_policy(vf):
     pass
 
-
 def value_iteration(theta = 0.5):
     v = value_function_init()
     # perform value iteration
     while True:
         max_delta = 0
-        for state in xrange(0, max_state + 1):
+        for state in generate_states():
             v = v[state]
             v[state] = state_update(state)
             delta = abs(v - v[state])
