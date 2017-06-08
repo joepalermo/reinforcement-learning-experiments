@@ -97,25 +97,23 @@ def policy_eval(env, policy, num_episodes=100000):
     visits_map = init_map_over_states()
     for _ in xrange(num_episodes):
         episode = generate_episode(env, policy)
-        visited_states = set()
+        state_updates = dict()
         n = len(episode)
         # keep track of cumulative return over the episode
         ret = 0
         # loop backwards through the episode
         for i in range(n-1, -1, -1):
             (state, _, reward, _) = episode[i]
-            visited_states.add(state)
             avg_return = v[state]
-            # compute cumulative return
+            # update cumulative return
             ret += reward
             m = visits_map[state] + 1
             # compute an updated average return
-            update_avg_return = avg_return + (1.0 / m) * (ret - avg_return)
-            v[state] = update_avg_return
-        # update the counter for each state
-        for state in visited_states:
+            state_updates[state] = avg_return + (1.0 / m) * (ret - avg_return)
+        # update the visit counter for each visited state
+        for state in state_updates:
+            v[state] = state_updates[state]
             visits_map[state] += 1
-        # increment the episode index
     return v
 
 # main functionality -----------------------------------------------------------
