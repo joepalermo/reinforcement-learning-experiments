@@ -17,7 +17,7 @@ def generate_states():
                 yield (player_sum, dealer_showing, usable_ace)
 
 # generate all states with the supplied value of usable_ace
-def generate_states_half(usable_ace):
+def generate_half_states(usable_ace=False):
     for player_sum in xrange(4,22):
         for dealer_showing in xrange(1,11):
             yield (player_sum, dealer_showing, usable_ace)
@@ -39,12 +39,17 @@ def init_policy():
 # takes as input a value function (represented as a dictionary mapping states
 # to expected value) and displays a visualization of the value function as a
 # heatmap
-def visualize_value_function(policy_value, usable_ace=False):
-    states = [state for state in generate_states_half(usable_ace)]
+def visualize_value_function(policy_value):
+    # visualize states where usable_ace is False
+    states = [state for state in generate_half_states(usable_ace=False)]
     state_values = [policy_value[state] for state in states]
     state_values_matrix = np.reshape(np.array(state_values), (18, 10))
-    print "min state value: " + str(state_values_matrix.min()) + \
-          ", max state value: " + str(state_values_matrix.max())
+    plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
+    plt.show()
+    # visualize the other half of the states where usable_ace is False
+    states = [state for state in generate_half_states(usable_ace=True)]
+    state_values = [policy_value[state] for state in states]
+    state_values_matrix = np.reshape(np.array(state_values), (18, 10))
     plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
     plt.show()
 
@@ -72,7 +77,7 @@ def generate_episode(env, policy):
     observation = env.reset()
     while True:
         #print "observation: " + str(observation)
-        action = choose_action(policy[observation])
+        action = choose_action(policy, observation)
         #print "action: " + str(action)
         next_observation, reward, done, _ = env.step(action)
         episode_step = (observation, action, reward, next_observation)
@@ -119,7 +124,6 @@ def main():
     policy = init_policy()
     env = gym.make("Blackjack-v0")
     v = policy_eval(env, policy)
-    visualize_value_function(v, usable_ace=False)
-    visualize_value_function(v, usable_ace=True)
+    visualize_value_function(v)
 
 main()
