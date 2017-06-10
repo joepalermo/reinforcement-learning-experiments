@@ -23,18 +23,13 @@ def init_policy(env):
 def generate_episode(env, policy):
     episode = list()
     observation = env.reset()
-    while True:
-        #print "observation: " + str(observation)
-        action = choose_stochastic_action(policy, observation)
-        #print "action: " + str(action)
+    done = False
+    while not done:
+        action = choose_deterministic_action(policy, observation)
         next_observation, reward, done, _ = env.step(action)
         episode_step = (observation, action, reward, next_observation)
         episode.append(episode_step)
         observation = next_observation
-        if done:
-            #print "reward: " + str(int(reward)) + "\n"
-            observation = env.reset()
-            break
     return episode
 
 # evaluate a policy by first-visit monte carlo policy evaluation

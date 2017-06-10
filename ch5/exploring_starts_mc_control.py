@@ -11,33 +11,32 @@ from utilities import init_state_action_map, \
 def generate_episode_es(env, policy):
     episode = list()
     observation = env.reset()
-    #print "observation: " + str(observation)
-    action = None
-    while True:
-        # at the start of an episode, select action ramdomly
-        if action:
+    action = env.action_space.sample()
+    done = False
+    while not done:
+        # action will always be truthy on the first iteration to allow
+        # exploring starts
+        if not action:
             action = choose_deterministic_action(policy, observation)
-        else:
-            action = env.action_space.sample()
-        #print "action: " + str(action)
         next_observation, reward, done, _ = env.step(action)
         episode_step = (observation, action, reward, next_observation)
         episode.append(episode_step)
         observation = next_observation
-        if done:
-            #print "reward: " + str(int(reward)) + "\n"
-            observation = env.reset()
-            break
+        action = None
     return episode
 
 # perform episode-wise policy iteration
 def policy_iteration(env, policy):
     q = init_state_action_map(env)
+    # special_states = [(21, x, False) for x in xrange(1,11)]
+    # print [q[state][1] for state in special_states]
     visits_map = init_state_action_map(env)
     for _ in xrange(100000):
         episode = generate_episode_es(env, policy)
+        # print episode
         policy_evaluation(episode, q, visits_map)
         policy_improvement(env, episode, q, policy)
+    # print [q[state][1] for state in special_states]
     return q
 
 # perform policy evaluation on an episode
@@ -73,6 +72,6 @@ def main():
     env = Blackjack()
     policy = init_deterministic_policy(env)
     q = policy_iteration(env, policy)
-    env.visualize_policy(q)
+    #env.visualize_policy(q)
 
 main()
