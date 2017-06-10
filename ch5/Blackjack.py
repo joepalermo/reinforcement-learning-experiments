@@ -26,17 +26,29 @@ class Blackjack(BlackjackEnv):
         for action in xrange(0,2):
             yield action
 
-    # visualize the policy by way of the corresponding state-value function
-    def visualize_policy(self, q):
-        # visualize states where usable_ace is False
+    # visualize the action value function as a heatmap
+    def visualize_action_value(self, q):
+        # visualize action value where usable_ace is False and action is hit
         states = [state for state in self.generate_half_states(usable_ace=False)]
         state_values = [q[state][1] for state in states]
         state_values_matrix = np.reshape(np.array(state_values), (18, 10))
         plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
         plt.show()
-        # visualize the other half of the states where usable_ace is False
+        # visualize action value where usable_ace is True and action is hit
         states = [state for state in self.generate_half_states(usable_ace=True)]
         state_values = [q[state][1] for state in states]
+        state_values_matrix = np.reshape(np.array(state_values), (18, 10))
+        plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
+        plt.show()
+        # visualize action value where usable_ace is False and action is stick
+        states = [state for state in self.generate_half_states(usable_ace=False)]
+        state_values = [q[state][0] for state in states]
+        state_values_matrix = np.reshape(np.array(state_values), (18, 10))
+        plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
+        plt.show()
+        # visualize action value where usable_ace is True and action is stick
+        states = [state for state in self.generate_half_states(usable_ace=True)]
+        state_values = [q[state][0] for state in states]
         state_values_matrix = np.reshape(np.array(state_values), (18, 10))
         plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
         plt.show()
@@ -45,16 +57,16 @@ class Blackjack(BlackjackEnv):
     # takes as input a value function (represented as a dictionary mapping states
     # to expected value) and displays a visualization of the value function as a
     # heatmap
-    def visualize_value_function(self, policy_value):
-        # visualize states where usable_ace is False
+    def visualize_state_value(self, v):
+        # visualize state value where usable_ace is False
         states = [state for state in self.generate_half_states(usable_ace=False)]
-        state_values = [policy_value[state] for state in states]
+        state_values = [v[state] for state in states]
         state_values_matrix = np.reshape(np.array(state_values), (18, 10))
         plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
         plt.show()
-        # visualize the other half of the states where usable_ace is False
+        # visualize state value where usable_ace is True
         states = [state for state in self.generate_half_states(usable_ace=True)]
-        state_values = [policy_value[state] for state in states]
+        state_values = [v[state] for state in states]
         state_values_matrix = np.reshape(np.array(state_values), (18, 10))
         plt.imshow(state_values_matrix, cmap='hot', origin='lower', extent=((0,10,4,21)))
         plt.show()

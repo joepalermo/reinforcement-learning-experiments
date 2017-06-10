@@ -65,6 +65,6 @@ def main():
     env = Blackjack()
     policy = init_policy(env)
     v = policy_eval(env, policy)
-    env.visualize_value_function(v)
+    env.visualize_state_value(v)
 
 main()

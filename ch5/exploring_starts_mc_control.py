@@ -68,6 +68,6 @@ def main():
     env = Blackjack()
     policy = init_deterministic_policy(env)
     q = policy_iteration(env, policy)
-    env.visualize_policy(q)
+    env.visualize_action_value(q)
 
 main()
