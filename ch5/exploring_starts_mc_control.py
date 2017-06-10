@@ -1,12 +1,3 @@
-import gym
-import random
-import numpy as np
-import matplotlib
-# setup matplotlib
-matplotlib.use('TkAgg')
-# import plot function
-import matplotlib.pyplot as plt
-
 from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_deterministic_policy, \
