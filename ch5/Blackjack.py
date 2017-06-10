@@ -54,9 +54,7 @@ class Blackjack(BlackjackEnv):
         plt.show()
 
 
-    # takes as input a value function (represented as a dictionary mapping states
-    # to expected value) and displays a visualization of the value function as a
-    # heatmap
+    # visualize the state value function as a heatmap
     def visualize_state_value(self, v):
         # visualize state value where usable_ace is False
         states = [state for state in self.generate_half_states(usable_ace=False)]
