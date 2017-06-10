@@ -1,7 +1,8 @@
 from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_deterministic_policy, \
-                      choose_deterministic_action
+                      choose_deterministic_action, \
+                      get_random_state_action
 
 # utilities --------------------------------------------------------------------
 
@@ -10,8 +11,7 @@ from utilities import init_state_action_map, \
 # (observation, action, reward, next_observation)
 def generate_episode_es(env, policy):
     episode = list()
-    observation = env.reset()
-    action = env.action_space.sample()
+    (env, observation, action) = get_random_state_action(env)
     done = False
     while not done:
         # action will always be truthy on the first iteration to allow
@@ -28,15 +28,11 @@ def generate_episode_es(env, policy):
 # perform episode-wise policy iteration
 def policy_iteration(env, policy):
     q = init_state_action_map(env)
-    # special_states = [(21, x, False) for x in xrange(1,11)]
-    # print [q[state][1] for state in special_states]
     visits_map = init_state_action_map(env)
-    for _ in xrange(100000):
+    for _ in xrange(50000):
         episode = generate_episode_es(env, policy)
-        # print episode
         policy_evaluation(episode, q, visits_map)
         policy_improvement(env, episode, q, policy)
-    # print [q[state][1] for state in special_states]
     return q
 
 # perform policy evaluation on an episode
@@ -57,7 +53,7 @@ def policy_evaluation(episode, q, visits_map):
 # perform deterministic policy improvement over all states in an episodes
 def policy_improvement(env, episode, q, policy):
     for (state, _, _, _) in episode:
-        actions = [action for action in env.generate_actions()]
+        actions = [action for action in env.generate_actions(state)]
         best_action = (-1, -float("inf"))
         for i, action in enumerate(actions):
             value = q[state][action]
@@ -72,6 +68,6 @@ def main():
     env = Blackjack()
     policy = init_deterministic_policy(env)
     q = policy_iteration(env, policy)
-    #env.visualize_policy(q)
+    env.visualize_policy(q)
 
 main()

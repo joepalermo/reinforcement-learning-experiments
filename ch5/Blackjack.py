@@ -22,7 +22,7 @@ class Blackjack(BlackjackEnv):
                 yield (player_sum, dealer_showing, usable_ace)
 
     # generate all actions from a given state
-    def generate_actions(self):
+    def generate_actions(self, state):
         for action in xrange(0,2):
             yield action
 

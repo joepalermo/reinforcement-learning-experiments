@@ -25,7 +25,7 @@ def generate_episode(env, policy):
     observation = env.reset()
     done = False
     while not done:
-        action = choose_deterministic_action(policy, observation)
+        action = choose_stochastic_action(policy, observation)
         next_observation, reward, done, _ = env.step(action)
         episode_step = (observation, action, reward, next_observation)
         episode.append(episode_step)
@@ -33,7 +33,7 @@ def generate_episode(env, policy):
     return episode
 
 # evaluate a policy by first-visit monte carlo policy evaluation
-def policy_eval(env, policy, num_episodes=100000):
+def policy_eval(env, policy, num_episodes=50000):
     # init state value function
     v = init_state_map(env)
     # init a map from states to the number of first_visits to that state
