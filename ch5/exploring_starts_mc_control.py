@@ -14,8 +14,6 @@ def generate_episode_es(env, policy):
     (env, observation, action) = get_random_state_action(env)
     done = False
     while not done:
-        # action will always be truthy on the first iteration to allow
-        # exploring starts
         if action == None:
             action = choose_deterministic_action(policy, observation)
         next_observation, reward, done, _ = env.step(action)
