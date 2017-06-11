@@ -26,6 +26,24 @@ def init_deterministic_policy(env):
         policy[state] = env.action_space.sample()
     return policy
 
+# initialize an epsilon-greedy policy
+# epsilon must be in the domain [0, 1)
+def init_epsilon_greedy_policy(env, epsilon):
+    policy = dict()
+    for state in env.generate_states():
+        policy[state] = dict()
+        actions = [action for action in env.generate_actions(state)]
+        num_actions = len(actions)
+        # assign all actions to have at least a baseline probability
+        exploratory_action_prob = epsilon / num_actions
+        for action in actions:
+            policy[state][action] = exploratory_action_prob
+        # randomly select an action to be initialized as the greedy action
+        greedy_action_i = random.randint(0, num_actions-1)
+        greedy_action = actions[greedy_action_i]
+        policy[state][greedy_action] = 1 - epsilon + exploratory_action_prob
+    return policy
+
 # return a tuple containing a mid-episode environment, the environment's
 # current state, and a randomly selected action from that state
 def get_random_state_action(env):
