@@ -3,6 +3,8 @@ import numpy as np
 
 '''generic utility methods for implementing RL algorithms'''
 
+# initialization utilities -----------------------------------------------------
+
 # initialize a map over all states that maps every state to 0
 def init_state_map(env):
     state_map = dict()
@@ -44,6 +46,8 @@ def init_epsilon_greedy_policy(env, epsilon):
         policy[state][greedy_action] = 1 - epsilon + exploratory_action_prob
     return policy
 
+# episode generation utilities -------------------------------------------------
+
 # return a tuple containing a mid-episode environment, the environment's
 # current state, and a randomly selected action from that state
 def get_random_state_action(env):
@@ -52,7 +56,7 @@ def get_random_state_action(env):
     action = random.choice(actions)
     return (env, state, action)
 
-# return a (state, environment) pair mid-episode
+# return a (environment, state) pair mid-episode
 def get_mid_episode_state(env):
     observation = env.reset()
     done = False
@@ -65,6 +69,37 @@ def get_mid_episode_state(env):
         if done:
             observation = env.reset()
 
+# generate an episode represented as a list of tuples of form:
+# (observation, action, reward, next_observation)
+def generate_episode(env, policy):
+    episode = list()
+    observation = env.reset()
+    done = False
+    while not done:
+        action = choose_stochastic_action(policy, observation)
+        next_observation, reward, done, _ = env.step(action)
+        episode_step = (observation, action, reward, next_observation)
+        episode.append(episode_step)
+        observation = next_observation
+    return episode
+
+# generate an episode using exploring starts
+# return the episode represented as a list of tuples of form:
+# (observation, action, reward, next_observation)
+def generate_episode_es(env, policy):
+    episode = list()
+    (env, observation, action) = get_random_state_action(env)
+    done = False
+    while not done:
+        if action == None:
+            action = choose_deterministic_action(policy, observation)
+        next_observation, reward, done, _ = env.step(action)
+        episode_step = (observation, action, reward, next_observation)
+        episode.append(episode_step)
+        observation = next_observation
+        action = None
+    return episode
+
 # choose an action using a deterministic policy
 def choose_deterministic_action(policy, observation):
     return policy[observation]
@@ -76,3 +111,20 @@ def choose_stochastic_action(policy, observation):
     action_space = action_dict.keys()
     p_distn = action_dict.values()
     return np.random.choice(action_space, 1, p=p_distn)[0]
+
+# policy evaluation/improvement/iteration utilities ----------------------------
+
+# perform policy evaluation on an episode
+def policy_eval_on_episode(episode, q, visits_map):
+    n = len(episode)
+    ret = 0
+    updates_map = dict()
+    for i in range(n-1, -1, -1):
+        (state, action, reward, _) = episode[i]
+        ret += reward
+        m = visits_map[state][action] + 1
+        updated_value = q[state][action] + 1.0 / m * (ret - q[state][action])
+        updates_map[(state, action)] = updated_value
+    for (state, action) in updates_map:
+        visits_map[state][action] += 1
+        q[state][action] = updates_map[(state, action)]

@@ -1,6 +1,6 @@
 from Blackjack import Blackjack
 from utilities import init_state_map, \
-                      choose_stochastic_action
+                      generate_episode
 
 # utilities --------------------------------------------------------------------
 
@@ -17,20 +17,6 @@ def init_policy(env):
             policy[state][1] = 0
             policy[state][0] = 1.0
     return policy
-
-# generate an episode represented as a list of tuples of form:
-# (observation, action, reward, next_observation)
-def generate_episode(env, policy):
-    episode = list()
-    observation = env.reset()
-    done = False
-    while not done:
-        action = choose_stochastic_action(policy, observation)
-        next_observation, reward, done, _ = env.step(action)
-        episode_step = (observation, action, reward, next_observation)
-        episode.append(episode_step)
-        observation = next_observation
-    return episode
 
 # evaluate a policy by first-visit monte carlo policy evaluation
 def policy_eval(env, policy, num_episodes=50000):

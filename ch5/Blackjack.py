@@ -6,6 +6,7 @@ matplotlib.use('TkAgg')
 # import plot function
 import matplotlib.pyplot as plt
 
+# wrapper class for gym's BlackjackEnv
 class Blackjack(BlackjackEnv):
 
     # generate all states
