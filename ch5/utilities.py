@@ -19,19 +19,6 @@ def init_state_action_map(env):
             state_action_map[state][action] = 0
     return state_action_map
 
-# return a (state, environment) pair mid-episode
-def get_mid_episode_state(env):
-    observation = env.reset()
-    done = False
-    while True:
-        if random.random() < 0.5:
-            return (env, observation)
-        action = env.action_space.sample()
-        next_observation, reward, done, _ = env.step(action)
-        observation = next_observation
-        if done:
-            observation = env.reset()
-
 # initialize a random deterministic policy
 def init_deterministic_policy(env):
     policy = dict()
@@ -46,6 +33,19 @@ def get_random_state_action(env):
     actions = [action for action in env.generate_actions(state)]
     action = random.choice(actions)
     return (env, state, action)
+
+# return a (state, environment) pair mid-episode
+def get_mid_episode_state(env):
+    observation = env.reset()
+    done = False
+    while True:
+        if random.random() < 0.5:
+            return (env, observation)
+        action = env.action_space.sample()
+        next_observation, reward, done, _ = env.step(action)
+        observation = next_observation
+        if done:
+            observation = env.reset()
 
 # choose an action using a deterministic policy
 def choose_deterministic_action(policy, observation):
