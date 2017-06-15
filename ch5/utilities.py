@@ -28,6 +28,16 @@ def init_deterministic_policy(env):
         policy[state] = env.action_space.sample()
     return policy
 
+def init_equiprobable_random_policy(env):
+    policy = dict()
+    for state in env.generate_states():
+        policy[state] = dict()
+        actions = [action for action in env.generate_actions(state)]
+        num_actions = len(actions)
+        for action in actions:
+            policy[state][action] = 1.0 / num_actions
+    return policy
+
 # initialize an epsilon-greedy policy
 # epsilon must be in the domain [0, 1)
 def init_epsilon_greedy_policy(env, epsilon):
