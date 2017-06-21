@@ -18,10 +18,7 @@ def init_policy(env):
     return policy
 
 def importance_sampling(target_policy, behavior_policy, state, action):
-    if action == target_policy[state]:
-        return 1.0 / behavior_policy[state][action]
-    else:
-        return 0
+        return target_policy[state][action] / behavior_policy[state][action]
 
 def policy_eval(env, target_policy, behavior_policy, gamma=1, num_episodes=100000):
     q = init_state_action_map(env)
