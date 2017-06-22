@@ -30,7 +30,7 @@ def policy_iteration(env, policy, epsilon):
     visits_map = init_state_action_map(env)
     for _ in xrange(50000):
         episode = generate_episode(env, policy)
-        policy_eval_on_episode(episode, q, visits_map)
+        on_policy_episode_eval(episode, q, visits_map)
         policy_improvement(env, episode, q, policy, epsilon)
     return q
 

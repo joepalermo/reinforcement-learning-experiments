@@ -128,7 +128,7 @@ def importance_sampling(target_policy, behavior_policy, state, action):
     return target_policy[state][action] / behavior_policy[state][action]
 
 # perform policy evaluation on an episode
-def policy_eval_on_episode(episode, q, visits_map):
+def on_policy_episode_eval(episode, q, visits_map):
     n = len(episode)
     ret = 0
     updates_map = dict()
