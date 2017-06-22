@@ -18,7 +18,7 @@ def init_policy(env):
     return policy
 
 def importance_sampling(target_policy, behavior_policy, state, action):
-        return target_policy[state][action] / behavior_policy[state][action]
+    return target_policy[state][action] / behavior_policy[state][action]
 
 def policy_eval(env, target_policy, behavior_policy, gamma=1, num_episodes=100000):
     q = init_state_action_map(env)
