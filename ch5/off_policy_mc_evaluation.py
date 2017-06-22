@@ -40,9 +40,9 @@ def policy_eval(env, target_policy, behavior_policy, gamma=1, num_episodes=10000
 
 def main():
     env = Blackjack()
-    behavior_policy = init_equiprobable_random_policy(env)
     target_policy = init_policy(env)
-    q = policy_eval(env, behavior_policy, target_policy)
+    behavior_policy = init_equiprobable_random_policy(env)
+    q = policy_eval(env, target_policy, behavior_policy)
     env.visualize_action_value(q)
 
 main()
