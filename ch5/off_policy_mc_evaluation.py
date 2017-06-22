@@ -25,7 +25,7 @@ def policy_eval(env, target_policy, behavior_policy, gamma=1, num_episodes=10000
     c = init_state_action_map(env)
     for _ in xrange(num_episodes):
         g = 0
-        w = 1
+        w = 1.0
         episode = generate_episode(env, behavior_policy)
         num_steps = len(episode)
         for i in xrange(num_steps-1, -1, -1):
