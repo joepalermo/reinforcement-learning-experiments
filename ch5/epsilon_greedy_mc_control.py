@@ -24,7 +24,7 @@ def policy_improvement(env, episode, q, policy, epsilon):
         policy[state][best_action] = 1 - epsilon + exploratory_action_prob
         assert policy[state][best_action] + (num_actions - 1) * exploratory_action_prob == 1.0
 
-# perform episode-wise policy iteration
+# perform episode-wise on-policy iteration
 def policy_iteration(env, policy, epsilon):
     q = init_state_action_map(env)
     visits_map = init_state_action_map(env)

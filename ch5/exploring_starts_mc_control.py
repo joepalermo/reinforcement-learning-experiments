@@ -18,7 +18,7 @@ def policy_improvement(env, episode, q, policy):
         best_action = actions[best_action[0]]
         policy[state] = best_action
 
-# perform episode-wise policy iteration
+# perform episode-wise on-policy iteration with exploring starts
 def policy_iteration(env, policy):
     q = init_state_action_map(env)
     visits_map = init_state_action_map(env)
