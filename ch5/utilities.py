@@ -127,7 +127,7 @@ def choose_stochastic_action(policy, observation):
 def importance_sampling(target_policy, behavior_policy, state, action):
     return target_policy[state][action] / behavior_policy[state][action]
 
-# perform policy evaluation on an episode
+# perform on-policy evaluation on an episode
 def on_policy_episode_eval(episode, q, visits_map):
     n = len(episode)
     ret = 0
@@ -141,3 +141,17 @@ def on_policy_episode_eval(episode, q, visits_map):
     for (state, action) in updates_map:
         visits_map[state][action] += 1
         q[state][action] = updates_map[(state, action)]
+
+# perform off-policy evaluation on an episode
+def off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy):
+    g = 0
+    w = 1.0
+    num_steps = len(episode)
+    for i in xrange(num_steps-1, -1, -1):
+        (state, action, reward, next_state) = episode[i]
+        g = gamma * g + reward
+        c[state][action] += w
+        q[state][action] += w / c[state][action] * (g - q[state][action])
+        w *= importance_sampling(target_policy, behavior_policy, state, action)
+        if w == 0:
+            break
