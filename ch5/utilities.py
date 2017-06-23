@@ -28,6 +28,7 @@ def init_deterministic_policy(env):
         policy[state] = env.action_space.sample()
     return policy
 
+# initialize a stochastic policy which selects all actions with equal probability
 def init_equiprobable_random_policy(env):
     policy = dict()
     for state in env.generate_states():
@@ -122,13 +123,14 @@ def choose_stochastic_action(policy, observation):
     p_distn = action_dict.values()
     return np.random.choice(action_space, 1, p=p_distn)[0]
 
-# policy evaluation/improvement/iteration utilities ----------------------------
+# policy evaluation utilities --------------------------------------------------
 
+# get the importance sampling ratio for a given state action pair
 def importance_sampling(target_policy, behavior_policy, state, action):
     return target_policy[state][action] / behavior_policy[state][action]
 
-# perform on-policy evaluation on an episode
-def on_policy_episode_eval(episode, q, visits_map):
+# perform episode-wise first-visit on-policy evaluation
+def on_policy_episode_evaluation(episode, q, visits_map):
     n = len(episode)
     ret = 0
     updates_map = dict()
@@ -142,8 +144,8 @@ def on_policy_episode_eval(episode, q, visits_map):
         visits_map[state][action] += 1
         q[state][action] = updates_map[(state, action)]
 
-# perform off-policy evaluation on an episode
-def off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy):
+# perform episode-wise off-policy every-visit policy evaluation
+def off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy, gamma=1):
     g = 0
     w = 1.0
     num_steps = len(episode)
@@ -155,3 +157,48 @@ def off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy)
         w *= importance_sampling(target_policy, behavior_policy, state, action)
         if w == 0:
             break
+
+# policy improvement utilities -------------------------------------------------
+
+# perform episode-wise epsilon-greedy policy improvement
+def epsilon_greedy_policy_improvement(env, episode, q, policy, epsilon):
+    for (state, _, _, _) in episode:
+        actions = [action for action in env.generate_actions(state)]
+        num_actions = len(actions)
+        exploratory_action_prob = epsilon / num_actions
+        best_action = (-1, -float("inf"))
+        for i, action in enumerate(actions):
+            # default all action probabilities to the baseline
+            policy[state][action] = exploratory_action_prob
+            action_value = q[state][action]
+            if action_value > best_action[1]:
+                best_action = (i, action_value)
+        best_action_i = best_action[0]
+        best_action = actions[best_action_i]
+        policy[state][best_action] = 1 - epsilon + exploratory_action_prob
+        assert policy[state][best_action] + (num_actions - 1) * exploratory_action_prob == 1.0
+
+# perform episode-wise policy improvement for a deterministic policy
+def greedy_deterministic_policy_improvement(env, episode, q, policy):
+    for (state, _, _, _) in episode:
+        actions = [action for action in env.generate_actions(state)]
+        best_action = (-1, -float("inf"))
+        for i, action in enumerate(actions):
+            value = q[state][action]
+            if value > best_action[1]:
+                best_action = (i, value)
+        best_action = actions[best_action[0]]
+        policy[state] = best_action
+
+# perform episode-wise greedy policy improvement on a policy represented stochastically
+def greedy_stochastic_policy_improvement(env, episode, q, policy):
+    for (state, _, _, _) in episode:
+        actions = [action for action in env.generate_actions(state)]
+        best_action = (-1, -float("inf"))
+        for i, action in enumerate(actions):
+            policy[state][action] = 0
+            value = q[state][action]
+            if value > best_action[1]:
+                best_action = (i, value)
+        best_action = actions[best_action[0]]
+        policy[state][best_action] = 1.0
