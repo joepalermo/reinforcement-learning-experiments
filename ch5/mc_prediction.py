@@ -17,7 +17,6 @@ def init_policy(env):
             policy[state][0] = 1.0
     return policy
 
-
 # main functionality -----------------------------------------------------------
 
 def main():
