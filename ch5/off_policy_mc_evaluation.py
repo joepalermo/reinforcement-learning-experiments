@@ -1,7 +1,9 @@
 from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_equiprobable_random_policy, \
-                      generate_episode
+                      generate_episode, \
+                      off_policy_episode_evaluation
+
 
 # initialize a policy that only sticks on 20 or 21
 def init_policy(env):
@@ -17,30 +19,17 @@ def init_policy(env):
             policy[state][0] = 1.0
     return policy
 
-# evaluate a policy with off-policy every-visit monte carlo policy evaluation
-def policy_eval(env, target_policy, behavior_policy, gamma=1, num_episodes=100000):
-    q = init_state_action_map(env)
-    c = init_state_action_map(env)
-    for _ in xrange(num_episodes):
-        g = 0
-        w = 1.0
-        episode = generate_episode(env, behavior_policy)
-        num_steps = len(episode)
-        for i in xrange(num_steps-1, -1, -1):
-            (state, action, reward, next_state) = episode[i]
-            g = gamma * g + reward
-            c[state][action] += w
-            q[state][action] += w / c[state][action] * (g - q[state][action])
-            w *= importance_sampling(target_policy, behavior_policy, state, action)
-            if w == 0:
-                break
-    return q
+# main functionality -----------------------------------------------------------
 
 def main():
     env = Blackjack()
     target_policy = init_policy(env)
     behavior_policy = init_equiprobable_random_policy(env)
-    q = policy_eval(env, target_policy, behavior_policy)
+    q = init_state_action_map(env)
+    c = init_state_action_map(env)
+    for _ in xrange(20000):
+        episode = generate_episode(env, behavior_policy)
+        off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy)
     env.visualize_action_value(q)
 
 main()
