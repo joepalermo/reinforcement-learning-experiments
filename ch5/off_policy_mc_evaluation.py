@@ -2,7 +2,7 @@ from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_equiprobable_random_policy, \
                       generate_episode, \
-                      off_policy_episode_evaluation
+                      off_policy_evaluation
 
 
 # initialize a policy that only sticks on 20 or 21

@@ -1,7 +1,7 @@
 from Blackjack import Blackjack
 from utilities import init_state_map, \
                       generate_episode, \
-                      on_policy_episode_state_evaluation
+                      on_policy_state_evaluation
 
 # initialize a policy that only sticks on 20 or 21
 def init_policy(env):

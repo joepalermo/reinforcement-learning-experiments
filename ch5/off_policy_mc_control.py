@@ -2,8 +2,7 @@ from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_equiprobable_random_policy, \
                       generate_episode, \
-                      importance_sampling, \
-                      off_policy_episode_evaluation, \
+                      off_policy_evaluation, \
                       greedy_stochastic_policy_improvement, \
                       fine_grained_off_policy_iteration
 
@@ -27,7 +26,7 @@ def policy_iteration(env, target_policy, behavior_policy):
     c = init_state_action_map(env)
     for _ in xrange(20000):
         episode = generate_episode(env, behavior_policy)
-        off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy)
+        off_policy_evaluation(episode, q, c, target_policy, behavior_policy)
         greedy_stochastic_policy_improvement(env, episode, q, target_policy)
     return q
 

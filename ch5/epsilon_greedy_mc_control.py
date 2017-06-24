@@ -2,7 +2,7 @@ from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_epsilon_greedy_policy, \
                       generate_episode, \
-                      on_policy_episode_evaluation, \
+                      on_policy_evaluation, \
                       epsilon_greedy_policy_improvement
 
 # perform episode-wise on-policy iteration for an epsilon greedy policy

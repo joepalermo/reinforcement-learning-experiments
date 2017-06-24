@@ -2,7 +2,7 @@ from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_deterministic_policy, \
                       generate_episode_es, \
-                      on_policy_episode_evaluation, \
+                      on_policy_evaluation, \
                       greedy_deterministic_policy_improvement
 
 # perform episode-wise on-policy iteration with exploring starts
