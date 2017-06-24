@@ -172,6 +172,36 @@ def off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy,
         if w == 0:
             break
 
+# perform episode-wise off-policy every-visit, fine-grained policy iteration
+# interleave policy evaluation and policy improvement on a per-update basis
+def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_policy, gamma=1):
+    g = 0
+    w = 1.0
+    num_steps = len(episode)
+    for i in xrange(num_steps-1, -1, -1):
+        (state, action, reward, next_state) = episode[i]
+        g = gamma * g + reward
+        c[state][action] += w
+        q[state][action] += w / c[state][action] * (g - q[state][action])
+        # improve policy based on q update
+        actions = q[state].keys()
+        best_action_value = (-1, -float("inf"))
+        for i, a in enumerate(actions):
+            # by default set each action to a non-greedy state
+            target_policy[state][a] = 0
+            action_value = (i, q[state][a])
+            if action_value[1] > best_action_value[1]:
+                best_action_value = action_value
+        best_action_i = best_action_value[0]
+        best_action = actions[best_action_i]
+        q[state][best_action] = 1.0
+        # if the current action wouldn't be taken now, break
+        if best_action != action:
+            break
+        # if the current action is taken now, then its probability under
+        # the target policy is 1
+        w *= 1.0 / behavior_policy[state][action]
+
 # policy improvement utilities -------------------------------------------------
 
 # perform episode-wise epsilon-greedy policy improvement
