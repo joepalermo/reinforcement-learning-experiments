@@ -26,7 +26,7 @@ def main():
     visits_map = init_state_map(env)
     for _ in xrange(20000):
         episode = generate_episode(env, policy)
-        on_policy_episode_state_evaluation(episode, v, visits_map)
+        on_policy_state_evaluation(episode, v, visits_map)
     env.visualize_state_value(v)
 
 main()

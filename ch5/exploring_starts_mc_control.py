@@ -9,9 +9,9 @@ from utilities import init_state_action_map, \
 def policy_iteration(env, policy):
     q = init_state_action_map(env)
     visits_map = init_state_action_map(env)
-    for _ in xrange(50000):
+    for _ in xrange(20000):
         episode = generate_episode_es(env, policy)
-        on_policy_episode_evaluation(episode, q, visits_map)
+        on_policy_evaluation(episode, q, visits_map)
         greedy_deterministic_policy_improvement(env, episode, q, policy)
     return q
 

@@ -29,7 +29,7 @@ def main():
     c = init_state_action_map(env)
     for _ in xrange(20000):
         episode = generate_episode(env, behavior_policy)
-        off_policy_episode_evaluation(episode, q, c, target_policy, behavior_policy)
+        off_policy_evaluation(episode, q, c, target_policy, behavior_policy)
     env.visualize_action_value(q)
 
 main()

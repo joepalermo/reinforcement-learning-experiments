@@ -33,7 +33,7 @@ def policy_iteration(env, target_policy, behavior_policy):
 def policy_iteration2(env, target_policy, behavior_policy):
     q = init_state_action_map(env)
     c = init_state_action_map(env)
-    for _ in xrange(100000):
+    for _ in xrange(20000):
         episode = generate_episode(env, behavior_policy)
         fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_policy, gamma=1)
     return q
@@ -44,7 +44,7 @@ def main():
     env = Blackjack()
     target_policy = init_policy(env)
     behavior_policy = init_equiprobable_random_policy(env)
-    q = policy_iteration2(env, target_policy, behavior_policy)
+    q = policy_iteration(env, target_policy, behavior_policy)
     env.visualize_action_value(q)
 
 main()
