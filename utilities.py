@@ -57,6 +57,45 @@ def init_epsilon_greedy_policy(env, epsilon):
         policy[state][greedy_action] = 1 - epsilon + exploratory_action_prob
     return policy
 
+# action selection utilities ---------------------------------------------------
+
+# choose an action using a deterministic policy
+def choose_deterministic_action(policy, observation):
+    return policy[observation]
+
+# choose an action using a stochastic policy
+def choose_stochastic_action(policy, observation):
+    # action_dict is a map from actions to probability of selection
+    action_dict = policy[observation]
+    action_space = action_dict.keys()
+    p_distn = action_dict.values()
+    return np.random.choice(action_space, 1, p=p_distn)[0]
+
+# select an epsilon greey action
+def choose_epsilon_greedy_action(q, state, epsilon):
+    actions = q[state].keys()
+    if (random.random() < epsilon):
+        return random.choice(actions)
+    else:
+        best_action_properties = (-1, -float("inf"))
+        for i, action in enumerate(actions):
+            if q[state][action] > best_action_properties[1]:
+                best_action_properties = (i, q[state][action])
+        best_action_i = best_action_properties[0]
+        best_action = actions[best_action_i]
+        return best_action
+
+# select a greey action from a given state
+def choose_greedy_action(q, state):
+    actions = q[state].keys()
+    best_action_properties = (-1, -float("inf"))
+    for i, action in enumerate(actions):
+        if q[state][action] > best_action_properties[1]:
+            best_action_properties = (i, q[state][action])
+    best_action_i = best_action_properties[0]
+    best_action = actions[best_action_i]
+    return best_action
+
 # episode generation utilities -------------------------------------------------
 
 # return a tuple containing a mid-episode environment, the environment's
@@ -111,17 +150,41 @@ def generate_episode_es(env, policy):
         action = None
     return episode
 
-# choose an action using a deterministic policy
-def choose_deterministic_action(policy, observation):
-    return policy[observation]
+# generate a random episode, and return a list of its states
+def generate_random_episode(env):
+    state = env.reset()
+    episode = [state]
+    done = False
+    while not done:
+        random_action = env.action_space.sample()
+        (next_state, reward, done, _) = env.step(random_action)
+        episode.append(next_state)
+    return episode
 
-# choose an action
-def choose_stochastic_action(policy, observation):
-    # action_dict is a map from actions to probability of selection
-    action_dict = policy[observation]
-    action_space = action_dict.keys()
-    p_distn = action_dict.values()
-    return np.random.choice(action_space, 1, p=p_distn)[0]
+def generate_greedy_episode(env, q):
+    state = env.reset()
+    episode = [state]
+    done = False
+    while not done:
+        greedy_action = choose_greedy_action(q, state)
+        (next_state, reward, done, _) = env.step(greedy_action)
+        episode.append(next_state)
+        state = next_state
+    return episode
+
+def generate_epsilon_greedy_episode(env, q, epsilon=0.1):
+    state = env.reset()
+    episode = [state]
+    done = False
+    while not done:
+        if random.random() < epsilon:
+            action = env.action_space.sample()
+        else:
+            action = choose_greedy_action(q, state)
+        (next_state, reward, done, _) = env.step(action)
+        episode.append(next_state)
+        state = next_state
+    return episode
 
 # policy evaluation utilities --------------------------------------------------
 
@@ -172,36 +235,6 @@ def off_policy_evaluation(episode, q, c, target_policy, behavior_policy, gamma=1
         if w == 0:
             break
 
-# perform episode-wise off-policy every-visit, fine-grained policy iteration
-# interleave policy evaluation and policy improvement on a per-update basis
-def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_policy, gamma=1):
-    g = 0
-    w = 1.0
-    num_steps = len(episode)
-    for i in xrange(num_steps-1, -1, -1):
-        (state, action, reward, next_state) = episode[i]
-        g = gamma * g + reward
-        c[state][action] += w
-        q[state][action] += w / c[state][action] * (g - q[state][action])
-        # improve policy based on q update
-        actions = q[state].keys()
-        best_action_value = (-1, -float("inf"))
-        for i, a in enumerate(actions):
-            # by default set each action to a non-greedy state
-            target_policy[state][a] = 0
-            action_value = (i, q[state][a])
-            if action_value[1] > best_action_value[1]:
-                best_action_value = action_value
-        best_action_i = best_action_value[0]
-        best_action = actions[best_action_i]
-        q[state][best_action] = 1.0
-        # if the current action wouldn't be taken now, break
-        if best_action != action:
-            break
-        # if the current action is taken now, then its probability under
-        # the target policy is 1
-        w *= 1.0 / behavior_policy[state][action]
-
 # policy improvement utilities -------------------------------------------------
 
 # perform episode-wise epsilon-greedy policy improvement
@@ -246,3 +279,35 @@ def greedy_stochastic_policy_improvement(env, episode, q, policy):
                 best_action = (i, value)
         best_action = actions[best_action[0]]
         policy[state][best_action] = 1.0
+
+# policy iteration utilities ---------------------------------------------------
+
+# perform episode-wise off-policy every-visit, fine-grained policy iteration
+# interleave policy evaluation and policy improvement on a per-update basis
+def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_policy, gamma=1):
+    g = 0
+    w = 1.0
+    num_steps = len(episode)
+    for i in xrange(num_steps-1, -1, -1):
+        (state, action, reward, next_state) = episode[i]
+        g = gamma * g + reward
+        c[state][action] += w
+        q[state][action] += w / c[state][action] * (g - q[state][action])
+        # improve policy based on q update
+        actions = q[state].keys()
+        best_action_value = (-1, -float("inf"))
+        for i, a in enumerate(actions):
+            # by default set each action to a non-greedy state
+            target_policy[state][a] = 0
+            action_value = (i, q[state][a])
+            if action_value[1] > best_action_value[1]:
+                best_action_value = action_value
+        best_action_i = best_action_value[0]
+        best_action = actions[best_action_i]
+        q[state][best_action] = 1.0
+        # if the current action wouldn't be taken now, break
+        if best_action != action:
+            break
+        # if the current action is taken now, then its probability under
+        # the target policy is 1
+        w *= 1.0 / behavior_policy[state][action]

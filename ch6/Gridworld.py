@@ -27,9 +27,9 @@ class Gridworld(gym.Env):
         assert self.action_space.contains(action)
         (x,y) = self.coordinates
         # set next state on the basis of action
-        if action == 0 and y+1 <= self.y_limit:
+        if action == 0 and y+1 <= self.y_limit-1:
             self.coordinates = (x, y+1)
-        elif action == 1 and x+1 <= self.x_limit:
+        elif action == 1 and x+1 <= self.x_limit-1:
             self.coordinates = (x+1, y)
         elif action == 2 and y-1 >= 0:
             self.coordinates = (x, y-1)
@@ -51,3 +51,12 @@ class Gridworld(gym.Env):
         x = self.np_random.randint(self.x_limit)
         y = self.np_random.randint(self.y_limit)
         return (x,y)
+
+    def generate_states(self):
+        for x in xrange(self.x_limit):
+            for y in xrange(self.y_limit):
+                yield x, y
+
+    def generate_actions(self, state):
+        for x in xrange(0,4):
+            yield x
