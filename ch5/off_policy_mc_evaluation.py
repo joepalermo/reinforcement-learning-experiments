@@ -1,3 +1,8 @@
+import sys
+from os.path import abspath, join, dirname
+# add the top level package to sys.path to access utilities
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+
 from Blackjack import Blackjack
 from utilities import init_state_action_map, \
                       init_equiprobable_random_policy, \
