@@ -2,8 +2,13 @@ import random
 import gym
 from gym import spaces
 from gym.utils import seeding
+from rendering import Viewer
 
 class Gridworld(gym.Env):
+
+    metadata = {
+        'render.modes': ['human'],
+    }
 
     def __init__(self, kings_moves=False, wind=None, stochastic_wind=False):
         # set base attributes of the grid
@@ -30,6 +35,8 @@ class Gridworld(gym.Env):
         # reset state
         self._seed()
         self._reset()
+        # set rendering object to None by default
+        self.viewer = None
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -37,7 +44,10 @@ class Gridworld(gym.Env):
 
     def _reset(self):
         self.coordinates = self.reset_coordinates()
-        return self._get_obs()
+        return self.coordinates
+
+    def _get_obs(self):
+        return self.coordinates
 
     def _step(self, action):
         assert self.action_space.contains(action)
@@ -78,13 +88,28 @@ class Gridworld(gym.Env):
             done = False
         return self._get_obs(), reward, done, {}
 
-    def _get_obs(self):
-        return self.coordinates
+    def _render(self, mode='human', close=False):
+        if close:
+            if self.viewer is not None:
+                self.viewer.close()
+                self.viewer = None
+        elif self.viewer is None:
+            self.viewer = Viewer(self.x_limit, self.y_limit)
+        else:
+            entity_map = {'agent': self.coordinates, 'goal': self.goal}
+            self.viewer.update(entity_map)
+
+    def _close(self):
+        if self.viewer is not None:
+            self.viewer.close()
 
     # return a set of coordinates within the allowable range
-    def reset_coordinates(self):
-        x = self.np_random.randint(self.x_limit)
-        y = self.np_random.randint(self.y_limit)
+    def reset_coordinates(self, fixed = (0,0)):
+        if fixed:
+            (x, y) = fixed
+        else:
+            x = self.np_random.randint(self.x_limit)
+            y = self.np_random.randint(self.y_limit)
         return (x,y)
 
     # apply the effect of an action
