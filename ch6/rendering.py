@@ -50,17 +50,18 @@ class Viewer:
         for row in range(self.num_rows):
             for column in range(self.num_cols):
                 color = WHITE
-                # color a goal square green
                 if grid[row][column] == 'agent':
                     color = BLUE
                 elif grid[row][column] == 'goal':
                     color = GREEN
+                elif grid[row][column] == 'anti_goal':
+                    color = RED
                 # define the square (rectangle) to draw
                 rectangle_left_edge = (MARGIN + WIDTH) * column + MARGIN
                 rectangle_top_edge = (MARGIN + HEIGHT) * row + MARGIN
                 rectangle = [rectangle_left_edge, rectangle_top_edge, WIDTH, HEIGHT]
                 # draw the square (rectangle)
-                pygame.draw.rect(screen, color, rectangle)
+                pygame.draw.rect(self.screen, color, rectangle)
         # update screen
         pygame.display.flip()
 
@@ -73,6 +74,11 @@ class Viewer:
 # re-generate the grid given its size and the positions of various entities
 def generate_grid(num_rows, num_cols, entity_map):
     grid = [[0 for _ in range(num_cols)] for _ in range(num_rows)]
-    for entity,(x,y) in entity_map.items():
-        grid[-(y+1)][x] = entity
+    for entity, entity_data in entity_map.items():
+        if type(entity_data) is list:
+            for (x,y) in entity_data:
+                grid[-(y+1)][x] = entity
+        else:
+            (x, y) = entity_data
+            grid[-(y+1)][x] = entity
     return grid

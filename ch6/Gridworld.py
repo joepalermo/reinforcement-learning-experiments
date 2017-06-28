@@ -12,9 +12,11 @@ class Gridworld(gym.Env):
 
     def __init__(self, kings_moves=False, wind=None, stochastic_wind=False):
         # set base attributes of the grid
-        self.x_limit = 10
-        self.y_limit = 7
-        self.goal = (7,4)
+        self.x_limit = 8
+        self.y_limit = 4
+        self.goal = (7,0)
+        # anti_goals are states with negative reward, i.e. the cliff
+        self.anti_goal = [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)]
         # set observation_space
         self.observation_space = spaces.Tuple((
             spaces.Discrete(self.x_limit),
@@ -83,6 +85,10 @@ class Gridworld(gym.Env):
         if self.coordinates == self.goal:
             reward = 0
             done = True
+        elif self.coordinates in self.anti_goal:
+            reward = -100
+            done = False
+            self.reset_coordinates()
         else:
             reward = -1
             done = False
@@ -96,7 +102,9 @@ class Gridworld(gym.Env):
         elif self.viewer is None:
             self.viewer = Viewer(self.x_limit, self.y_limit)
         else:
-            entity_map = {'agent': self.coordinates, 'goal': self.goal}
+            entity_map = {'agent': self.coordinates,
+                          'goal': self.goal,
+                          'anti_goal': self.anti_goal}
             self.viewer.update(entity_map)
 
     def _close(self):
