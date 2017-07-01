@@ -11,19 +11,25 @@ from utilities import init_state_action_map, \
                       generate_epsilon_greedy_episode
 from Gridworld import Gridworld
 
-def sarsa(env, epsilon=0.1, alpha=0.5, gamma=1):
-    # learn q
+def expected_q(state, q, epsilon):
+    actions = q[state].keys()
+    num_actions = len(actions)
+    expl_prob = epsilon / num_actions
+    greedy_action = choose_greedy_action(q, state)
+    action_probs = [1 - epsilon + expl_prob if action == greedy_action else expl_prob for action in actions]
+    return sum([action_prob * q[state][action] for (action, action_prob) in zip(actions, action_probs)])
+
+def expected_sarsa(env, epsilon=0.1, alpha=0.5, gamma=1):
     q = init_state_action_map(env)
     for i in xrange(100):
         state = env.reset()
-        action = choose_epsilon_greedy_action(q, state, epsilon)
         done = False
         while not done:
+            action = choose_epsilon_greedy_action(q, state, epsilon)
             (next_state, reward, done, _) = env.step(action)
-            next_action = choose_epsilon_greedy_action(q, next_state, epsilon)
-            td_error = reward + gamma * q[next_state][next_action] - q[state][action]
+            td_error = reward + gamma * expected_q(next_state, q, epsilon) - q[state][action]
             q[state][action] += alpha * td_error
-            state, action = next_state, next_action
+            state = next_state
     return q
 
 def main():
@@ -36,9 +42,9 @@ def main():
     print "baseline random performance: " + str(avg)
 
     # learn q
-    print "running sarsa..."
-    q = sarsa(env)
-    print "sarsa complete"
+    print "running expected sarsa..."
+    q = expected_sarsa(env)
+    print "expected sarsa complete"
 
     # determine post-training performance
     avg = sum([len(generate_epsilon_greedy_episode(env, q)) for _ in range(num_episodes)]) / float(num_episodes)
