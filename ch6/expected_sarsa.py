@@ -21,7 +21,7 @@ def expected_q(state, q, epsilon):
 
 def expected_sarsa(env, epsilon=0.1, alpha=0.5, gamma=1):
     q = init_state_action_map(env)
-    for i in xrange(100):
+    for i in xrange(1000):
         state = env.reset()
         done = False
         while not done:

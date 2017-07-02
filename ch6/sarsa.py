@@ -14,7 +14,7 @@ from Gridworld import Gridworld
 def sarsa(env, epsilon=0.1, alpha=0.5, gamma=1):
     # learn q
     q = init_state_action_map(env)
-    for i in xrange(100):
+    for i in xrange(1000):
         state = env.reset()
         action = choose_epsilon_greedy_action(q, state, epsilon)
         done = False
