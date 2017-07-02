@@ -8,6 +8,7 @@ idna==2.5
 matplotlib==2.0.0
 numpy==1.12.1
 packaging==16.8
+pygame==1.9.3
 pyglet==1.2.4
 pyparsing==2.2.0
 python-dateutil==2.6.0
