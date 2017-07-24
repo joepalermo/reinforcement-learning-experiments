@@ -2,7 +2,7 @@ import random
 import gym
 from gym import spaces
 from gym.utils import seeding
-from rendering import Viewer
+from gridworld_rendering import Viewer
 
 class Gridworld(gym.Env):
 
@@ -10,13 +10,13 @@ class Gridworld(gym.Env):
         'render.modes': ['human'],
     }
 
-    def __init__(self, kings_moves=False, wind=None, stochastic_wind=False):
+    def __init__(self, x_limit, y_limit, goals, anti_goals, kings_moves=False, wind=None, stochastic_wind=False):
         # set base attributes of the grid
-        self.x_limit = 8
-        self.y_limit = 4
-        self.goal = (7,3)
+        self.x_limit = x_limit
+        self.y_limit = y_limit
+        self.goals = goals
         # anti_goals are states with negative reward, i.e. the cliff
-        self.anti_goal = []
+        self.anti_goals = anti_goals
         # set observation_space
         self.observation_space = spaces.Tuple((
             spaces.Discrete(self.x_limit),
@@ -82,10 +82,10 @@ class Gridworld(gym.Env):
             elif action == 3:
                 self.apply_action((-1, 0))
         # determine whether the goal state has been reached
-        if self.coordinates == self.goal:
+        if self.coordinates in self.goals:
             reward = 0
             done = True
-        elif self.coordinates in self.anti_goal:
+        elif self.coordinates in self.anti_goals:
             reward = -100
             done = False
             self.reset_coordinates()
@@ -103,8 +103,8 @@ class Gridworld(gym.Env):
             self.viewer = Viewer(self.x_limit, self.y_limit)
         else:
             entity_map = {'agent': self.coordinates,
-                          'goal': self.goal,
-                          'anti_goal': self.anti_goal}
+                          'goal': self.goals,
+                          'anti_goal': self.anti_goals}
             self.viewer.update(entity_map)
 
     def _close(self):

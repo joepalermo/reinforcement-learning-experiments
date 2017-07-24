@@ -1,7 +1,8 @@
 import sys
 from os.path import abspath, join, dirname
-# add the top level package to sys.path to access utilities
+# add the top level package to sys.path to access utilities and environments
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+sys.path.insert(1, abspath(join(dirname(__file__), '../environments')))
 
 from Blackjack import Blackjack
 from utilities import init_state_action_map, \
