@@ -4,19 +4,19 @@ from gym import spaces
 from gym.utils import seeding
 from grid_rendering import Viewer
 
-class Gridworld(gym.Env):
+class Maze(gym.Env):
 
     metadata = {
         'render.modes': ['human'],
     }
 
-    def __init__(self, x_limit, y_limit, goals, anti_goals, kings_moves=False, wind=None, stochastic_wind=False):
-        # set base attributes of the grid
+    def __init__(self, x_limit, y_limit, goals, walls, kings_moves=False):
+        # set base attributes of the maze
         self.x_limit = x_limit
         self.y_limit = y_limit
         self.goals = goals
         # anti_goals are states with negative reward, i.e. the cliff
-        self.anti_goals = anti_goals
+        self.walls = walls
         # set observation_space
         self.observation_space = spaces.Tuple((
             spaces.Discrete(self.x_limit),
@@ -26,14 +26,8 @@ class Gridworld(gym.Env):
             self.action_space = spaces.Discrete(8)
         else:
             self.action_space = spaces.Discrete(4)
-        # set wind
-        if wind:
-            self.wind = wind
-        else:
-            self.wind = [0 for x in xrange(0, self.x_limit)]
         # set flags
         self.kings_moves = kings_moves
-        self.stochastic_wind = stochastic_wind
         # reset state
         self._seed()
         self._reset()
@@ -87,10 +81,6 @@ class Gridworld(gym.Env):
         if self.coordinates in self.goals:
             reward = 0
             done = True
-        elif self.coordinates in self.anti_goals:
-            reward = -100
-            done = False
-            self.reset_coordinates()
         else:
             reward = -1
             done = False
@@ -107,7 +97,7 @@ class Gridworld(gym.Env):
         else:
             entity_map = {'agent': self.coordinates,
                           'goal': self.goals,
-                          'anti_goal': self.anti_goals}
+                          'wall': self.walls}
             self.viewer.update(entity_map)
 
     def _close(self):
@@ -127,28 +117,18 @@ class Gridworld(gym.Env):
     def apply_action(self, action):
         (x, y) = self.coordinates
         (delta_x, delta_y) = action
-        # determine translation due to the wind
-        if self.stochastic_wind:
-            wind = random.choice([self.wind[x]-1, self.wind[x], self.wind[x]+1])
-        else:
-            wind = self.wind[x]
-        # apply the effect of the action and the wind
-        (x_, y_) = (x + delta_x, y + delta_y + wind)
-        # ensure that x stays within bounds
-        if 0 <= x_ and x_ <= self.x_limit-1:
-            new_x = x_
-        elif x_ <= self.x_limit-1:
-            new_x = 0
-        else:
-            new_x = self.x_limit-1
-        # ensure that y stays within bounds
-        if 0 <= y_ and y_ < self.y_limit:
-            new_y = y_
-        elif y_ <= self.y_limit-1:
-            new_y = 0
-        else:
-            new_y = self.y_limit-1
-        self.coordinates = (new_x, new_y)
+        new_position = (x + delta_x, y + delta_y)
+        # only apply action if new position is within the env's boundaries
+        if self.position_within_boundary(new_position):
+            self.coordinates = new_position
+
+    def position_within_boundary(self, position):
+        (x, y) = position
+        if 0 <= x and x <= self.x_limit-1:
+            if 0 <= y and y <= self.y_limit-1:
+                if (x,y) not in self.walls:
+                    return True
+        return False
 
     # generate all states
     def generate_states(self):

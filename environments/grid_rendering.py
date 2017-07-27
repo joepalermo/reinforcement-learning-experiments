@@ -7,7 +7,7 @@ import pygame
 import time
 
 # set title of screen
-TITLE = "Animating Gridworld"
+TITLE = "Animating a Grid"
 
 # this sets the WIDTH and HEIGHT of each grid location
 WIDTH = 40
@@ -22,11 +22,12 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+GREY = (128, 128, 128)
 
 
 class Viewer:
     """
-    A class to render the Gridworld.
+    A class to render a Grid.
     """
 
     def __init__(self, num_cols, num_rows):
@@ -56,6 +57,8 @@ class Viewer:
                     color = GREEN
                 elif grid[row][column] == 'anti_goal':
                     color = RED
+                elif grid[row][column] == 'wall':
+                    color = GREY
                 # define the square (rectangle) to draw
                 rectangle_left_edge = (MARGIN + WIDTH) * column + MARGIN
                 rectangle_top_edge = (MARGIN + HEIGHT) * row + MARGIN
