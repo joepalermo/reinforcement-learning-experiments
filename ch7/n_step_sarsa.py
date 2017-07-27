@@ -1,7 +1,7 @@
 # boilerplate imports
 import sys
 from os.path import abspath, join, dirname
-# add the top level package to sys.path to access utilities
+# add the top level package to sys.path to access utilities and environments
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 sys.path.insert(1, abspath(join(dirname(__file__), '../environments')))
 
@@ -14,7 +14,7 @@ from utilities import init_state_action_map, \
                       generate_epsilon_greedy_episode
 from Gridworld import Gridworld
 
-def n_step_sarsa(env, alpha=0.5, epsilon=0.1, gamma=0.9, n=5, num_episodes=20):
+def n_step_sarsa(env, n=5, alpha=0.5, epsilon=0.1, gamma=0.9, num_episodes=10):
     q = init_state_action_map(env)
     for _ in range(num_episodes):
         # reset states, actions, and rewards lists
@@ -64,7 +64,7 @@ def main():
     anti_goals = []
 
     env = Gridworld(x_limit, y_limit, goals, anti_goals, kings_moves=False)
-    num_episodes = 1000
+    num_episodes = 100
 
     # determine the baseline performance that results from taking random moves
     avg = sum([len(generate_random_episode(env)) for _ in range(num_episodes)]) / float(num_episodes)

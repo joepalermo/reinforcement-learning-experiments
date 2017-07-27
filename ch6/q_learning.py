@@ -8,13 +8,10 @@ import time
 from utilities import init_state_action_map, \
                       choose_epsilon_greedy_action, \
                       choose_greedy_action, \
+                      max_q, \
                       generate_random_episode, \
                       generate_epsilon_greedy_episode
 from Gridworld import Gridworld
-
-def max_q(state, q):
-    actions = q[state].keys()
-    return max([q[state][action] for action in actions])
 
 def q_learning(env, epsilon=0.1, alpha=0.5, gamma=1):
     q = init_state_action_map(env)
