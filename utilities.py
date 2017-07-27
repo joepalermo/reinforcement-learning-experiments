@@ -21,6 +21,18 @@ def init_state_action_map(env):
             state_action_map[state][action] = 0
     return state_action_map
 
+# initialize a model of the environment by mapping all state-action pairs
+# to a random state and a base value for reward
+def init_model(env, base_reward):
+    states = [state for state in env.generate_states()]
+    model = dict()
+    for state in states:
+        for action in env.generate_actions(state):
+            next_state = random.choice(states)
+            model[(state, action)] = (next_state, base_reward)
+    return model
+
+
 # initialize a random deterministic policy
 def init_deterministic_policy(env):
     policy = dict()
@@ -95,6 +107,10 @@ def choose_greedy_action(q, state):
     best_action_i = best_action_properties[0]
     best_action = actions[best_action_i]
     return best_action
+
+def max_q(state, q):
+    actions = q[state].keys()
+    return max([q[state][action] for action in actions])
 
 # episode generation utilities -------------------------------------------------
 
