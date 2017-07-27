@@ -79,10 +79,10 @@ class Maze(gym.Env):
                 self.apply_action((-1, 0))
         # determine whether the goal state has been reached
         if self.coordinates in self.goals:
-            reward = 0
+            reward = 1
             done = True
         else:
-            reward = -1
+            reward = 0
             done = False
         self.cumulative_reward += reward
         return self._get_obs(), reward, done, {}
