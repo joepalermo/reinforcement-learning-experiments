@@ -11,20 +11,20 @@ class Blackjack(BlackjackEnv):
 
     # generate all states
     def generate_states(self):
-        for player_sum in xrange(4,22):
-            for dealer_showing in xrange(1,11):
+        for player_sum in range(4,22):
+            for dealer_showing in range(1,11):
                 for usable_ace in [False, True]:
                     yield (player_sum, dealer_showing, usable_ace)
 
     # generate all states with the supplied value of usable_ace
     def generate_half_states(self, usable_ace=False):
-        for player_sum in xrange(4,22):
-            for dealer_showing in xrange(1,11):
+        for player_sum in range(4,22):
+            for dealer_showing in range(1,11):
                 yield (player_sum, dealer_showing, usable_ace)
 
     # generate all actions from a given state
     def generate_actions(self, state):
-        for action in xrange(0,2):
+        for action in range(0,2):
             yield action
 
     # visualize the action value function as a heatmap

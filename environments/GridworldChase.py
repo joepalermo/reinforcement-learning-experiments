@@ -161,5 +161,8 @@ class GridworldChase(gym.Env):
 
     # generate all actions from a given state
     def generate_actions(self, state):
-        for x in xrange(0,self.action_space.n):
+        for x in range(0,self.action_space.n):
             yield x
+
+    def get_q_dim(self):
+        return len(self.state.keys()) * (env.x_lim * env.y_lim)

@@ -38,11 +38,11 @@ class RandomWalk(gym.Env):
         return self._get_obs(), reward, done, {}
 
     def generate_states(self):
-        for state in xrange(self.n):
+        for state in range(self.n):
             yield state
 
     def generate_actions(self):
-        for action in xrange(2):
+        for action in range(2):
             yield action
 
     def visualize_state_value(self, v):

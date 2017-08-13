@@ -15,7 +15,7 @@ from Gridworld import Gridworld
 
 def q_learning(env, epsilon=0.1, alpha=0.5, gamma=1):
     q = init_state_action_map(env)
-    for i in xrange(1000):
+    for i in range(1000):
         state = env.reset()
         done = False
         while not done:
@@ -38,16 +38,16 @@ def main():
 
     # determine the baseline performance that results from taking random moves
     avg = sum([len(generate_random_episode(env)) for _ in range(num_episodes)]) / float(num_episodes)
-    print "baseline random performance: " + str(avg)
+    print("baseline random performance: " + str(avg))
 
     # learn q
-    print "running q-learning..."
+    print("running q-learning...")
     q = q_learning(env)
-    print "q-learning complete"
+    print("q-learning complete")
 
     # determine post-training performance
     avg = sum([len(generate_epsilon_greedy_episode(env, q)) for _ in range(num_episodes)]) / float(num_episodes)
-    print "post learning performance: " + str(avg)
+    print("post learning performance: " + str(avg))
 
     # visualize post-training episode
     state = env.reset()

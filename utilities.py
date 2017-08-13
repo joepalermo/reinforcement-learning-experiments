@@ -79,13 +79,13 @@ def choose_deterministic_action(policy, observation):
 def choose_stochastic_action(policy, observation):
     # action_dict is a map from actions to probability of selection
     action_dict = policy[observation]
-    action_space = action_dict.keys()
+    action_space = list(action_dict.keys())
     p_distn = action_dict.values()
     return np.random.choice(action_space, 1, p=p_distn)[0]
 
 # select an epsilon greey action
 def choose_epsilon_greedy_action(q, state, epsilon):
-    actions = q[state].keys()
+    actions = list(q[state].keys())
     if (random.random() < epsilon):
         return random.choice(actions)
     else:
@@ -99,7 +99,7 @@ def choose_epsilon_greedy_action(q, state, epsilon):
 
 # select a greey action from a given state
 def choose_greedy_action(q, state):
-    actions = q[state].keys()
+    actions = list(q[state].keys())
     best_action_properties = (-1, -float("inf"))
     for i, action in enumerate(actions):
         if q[state][action] > best_action_properties[1]:
@@ -109,7 +109,7 @@ def choose_greedy_action(q, state):
     return best_action
 
 def max_q(state, q):
-    actions = q[state].keys()
+    actions = list(q[state].keys())
     return max([q[state][action] for action in actions])
 
 # episode generation utilities -------------------------------------------------
@@ -310,7 +310,7 @@ def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_pol
         c[state][action] += w
         q[state][action] += w / c[state][action] * (g - q[state][action])
         # improve policy based on q update
-        actions = q[state].keys()
+        actions = list(q[state].keys())
         best_action_value = (-1, -float("inf"))
         for i, a in enumerate(actions):
             # by default set each action to a non-greedy state

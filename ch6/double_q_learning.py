@@ -34,7 +34,7 @@ def double_q_update(q, q_prime, state, action, reward, next_state, alpha, gamma)
 def double_q_learning(env, epsilon=0.1, alpha=0.5, gamma=1):
     q1 = init_state_action_map(env)
     q2 = init_state_action_map(env)
-    for i in xrange(100000):
+    for i in range(100000):
         state = env.reset()
         done = False
         while not done:
@@ -59,16 +59,16 @@ def main():
 
     # determine the baseline performance that results from taking random moves
     avg = sum([len(generate_random_episode(env)) for _ in range(num_episodes)]) / float(num_episodes)
-    print "baseline random performance: " + str(avg)
+    print("baseline random performance: " + str(avg))
 
     # learn q
-    print "running double q-learning..."
+    print("running double q-learning...")
     q1, q2 = double_q_learning(env)
-    print "double q-learning complete"
+    print("double q-learning complete")
 
     # determine post-training performance
     avg = sum([len(generate_epsilon_greedy_episode(env, q1)) for _ in range(num_episodes)]) / float(num_episodes)
-    print "post learning performance: " + str(avg)
+    print("post learning performance: " + str(avg))
 
     # visualize post-training episode
     state = env.reset()

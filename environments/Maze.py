@@ -132,11 +132,11 @@ class Maze(gym.Env):
 
     # generate all states
     def generate_states(self):
-        for x in xrange(self.x_limit):
-            for y in xrange(self.y_limit):
+        for x in range(self.x_limit):
+            for y in range(self.y_limit):
                 yield x, y
 
     # generate all actions from a given state
     def generate_actions(self, state):
-        for x in xrange(0,self.action_space.n):
+        for x in range(0,self.action_space.n):
             yield x
