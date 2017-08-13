@@ -242,7 +242,7 @@ def off_policy_evaluation(episode, q, c, target_policy, behavior_policy, gamma=1
     g = 0
     w = 1.0
     num_steps = len(episode)
-    for i in xrange(num_steps-1, -1, -1):
+    for i in range(num_steps-1, -1, -1):
         (state, action, reward, next_state) = episode[i]
         g = gamma * g + reward
         c[state][action] += w
@@ -304,7 +304,7 @@ def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_pol
     g = 0
     w = 1.0
     num_steps = len(episode)
-    for i in xrange(num_steps-1, -1, -1):
+    for i in range(num_steps-1, -1, -1):
         (state, action, reward, next_state) = episode[i]
         g = gamma * g + reward
         c[state][action] += w
