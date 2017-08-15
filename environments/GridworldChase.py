@@ -4,6 +4,20 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 from grid_rendering import Viewer
+import numpy as np
+
+def state_encoder(env, state, dim=4):
+    (agent_x, agent_y) = state[0], state[1]
+    (goal_x, goal_y) = state[2], state[3]
+    if dim == 3:
+        x = np.zeros((env.x_lim, env.y_lim, 2))
+        x[agent_x, agent_y, 0] = 1
+        x[goal_x, goal_y, 1] = 1
+    elif dim == 4:
+        x = np.zeros((1, env.x_lim, env.y_lim, 2))
+        x[0, agent_x, agent_y, 0] = 1
+        x[0, goal_x, goal_y, 1] = 1
+    return x
 
 class GridworldChase(gym.Env):
 
@@ -46,6 +60,7 @@ class GridworldChase(gym.Env):
         self.agent = self.reset_coordinates()
         self.goal = self.reset_coordinates(fixed=(self.x_lim-1, self.y_lim-1))
         self.state = {'agent': self.agent, 'goal': self.goal}
+        return self._get_obs()
 
     def _get_obs(self):
         agent_x, agent_y = self.state['agent']
@@ -163,6 +178,3 @@ class GridworldChase(gym.Env):
     def generate_actions(self, state):
         for x in range(0,self.action_space.n):
             yield x
-
-    def get_q_dim(self):
-        return len(self.state.keys()) * (env.x_lim * env.y_lim)
