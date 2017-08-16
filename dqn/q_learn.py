@@ -7,7 +7,7 @@ import time
 import random
 from Qnet import Qnet
 from GridworldChase import GridworldChase, state_encoder
-from dqn_utils import max_q, choose_epsilon_greedy_action, estimate_performance
+from dqn_utils import choose_epsilon_greedy_action, estimate_performance
 import numpy as np
 
 # construct a mini-batch from the replay memory
@@ -16,22 +16,29 @@ def construct_mini_batch(q, replay_memory, mbs, gamma):
     num_actions = q.env.action_space.n
     random_indices = [random.randint(0,n-1) for _ in range(mbs)]
     raw_mb = [replay_memory[i] for i in random_indices]
-    xs, ys, actions = [], [], []
-    for (state, action, reward, next_state) in raw_mb:
+    xs, xps, actions, rewards = [], [], [], []
+    for i, (state, action, reward, next_state) in enumerate(raw_mb):
         # construct x
-        x = state_encoder(q.env, state, dim=3)
-        xs.append(x)
-        # construct y
-        y = np.zeros(num_actions)
         x = state_encoder(q.env, state)
+        xs.append(x[0])
+        # construct xp
         xp = state_encoder(q.env, next_state)
-        y[action] = reward + gamma * max_q(q, xp) - q.propagate(x)[action]
-        ys.append(y)
+        xps.append(xp[0])
         # construct a
         a = np.zeros(num_actions)
         a[action] = 1
         actions.append(a)
-    return np.array(xs), np.array(ys), np.array(actions)
+        # construct reward
+        rewards.append(reward)
+    xs, xps, actions, rewards = np.array(xs), np.array(xps), np.array(actions), np.array(rewards)
+    # construct ys
+    ys_base = np.zeros((mbs, num_actions))
+    az = np.argmax(actions, axis=1)
+    ys_base[np.arange(mbs), az] = np.ones(mbs)
+    ys_values = rewards + gamma * np.max(q.propagate(xps), axis=1) - q.propagate(xs)[np.arange(mbs), az]
+    ys_values = np.reshape(ys_values, (mbs, 1))
+    ys = ys_base * ys_values
+    return xs, ys, actions
 
 # learn a q-network
 def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, eta=0.1):
@@ -59,13 +66,13 @@ def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, e
 def main():
     # define hyperparameters
     num_episodes = 50
-    mbs = 100
-    epsilon = 0.1
+    mbs = 256
+    epsilon = 0.2
     gamma = 1
-    eta = 0.1
+    eta = 0.01
 
     # create an env
-    env = GridworldChase(10, 10)
+    env = GridworldChase(5, 5)
 
     # initialize a q-network
     q = Qnet(env)
@@ -84,11 +91,10 @@ def main():
     state = env.reset()
     while True:
         env.render()
-        time.sleep(0.25)
+        time.sleep(0.1)
         encoded_state = state_encoder(env, state)
-        action = choose_epsilon_greedy_action(q, encoded_state, epsilon)
+        action = choose_epsilon_greedy_action(q, encoded_state, 0.05)
         state, reward, done, _ = env.step(action)
-        print(state, reward, done)
         if done:
             env.render(close=True)
             break

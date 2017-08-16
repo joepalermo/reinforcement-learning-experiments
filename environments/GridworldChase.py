@@ -6,17 +6,15 @@ from gym.utils import seeding
 from grid_rendering import Viewer
 import numpy as np
 
-def state_encoder(env, state, dim=4):
+def empty_state_encoding(env, mbs):
+    return np.zeros((mbs, env.x_lim, env.y_lim, 2))
+
+def state_encoder(env, state):
     (agent_x, agent_y) = state[0], state[1]
     (goal_x, goal_y) = state[2], state[3]
-    if dim == 3:
-        x = np.zeros((env.x_lim, env.y_lim, 2))
-        x[agent_x, agent_y, 0] = 1
-        x[goal_x, goal_y, 1] = 1
-    elif dim == 4:
-        x = np.zeros((1, env.x_lim, env.y_lim, 2))
-        x[0, agent_x, agent_y, 0] = 1
-        x[0, goal_x, goal_y, 1] = 1
+    x = np.zeros((1, env.x_lim, env.y_lim, 2))
+    x[0, agent_x, agent_y, 0] = 1
+    x[0, goal_x, goal_y, 1] = 1
     return x
 
 class GridworldChase(gym.Env):

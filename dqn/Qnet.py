@@ -1,3 +1,4 @@
+import time
 import random
 import tensorflow as tf
 
@@ -37,19 +38,19 @@ class Qnet:
         # reshaping should be unnecessary
         # inpt = tf.reshape(x, [None, env.x_lim, env.y_lim, 2])
 
-        # First convolutional layer: full kernal with 2 to 20 channels
-        W_conv1 = weight_variable([env.x_lim, env.y_lim, 2, 20])
-        b_conv1 = bias_variable([20])
+        # First convolutional layer: full kernal with 2 to 40 channels
+        W_conv1 = weight_variable([env.x_lim, env.y_lim, 2, 40])
+        b_conv1 = bias_variable([40])
         a_conv1 = tf.nn.relu(conv2d(self.x, W_conv1) + b_conv1)
 
         # Fully connected layer
-        W_fc1 = weight_variable([20, 20])
-        b_fc1 = bias_variable([20])
-        a_conv1_flat = tf.reshape(a_conv1, [-1, 20])
+        W_fc1 = weight_variable([40, 100])
+        b_fc1 = bias_variable([100])
+        a_conv1_flat = tf.reshape(a_conv1, [-1, 40])
         a_fc1 = tf.nn.relu(tf.matmul(a_conv1_flat, W_fc1) + b_fc1)
 
-        # Map the 20 features into the action space
-        W_fc2 = weight_variable([20, self.num_outputs])
+        # Map the 100 features into the action space
+        W_fc2 = weight_variable([100, self.num_outputs])
         b_fc2 = bias_variable([self.num_outputs])
         self.y = tf.matmul(a_fc1, W_fc2) + b_fc2
 
@@ -65,4 +66,4 @@ class Qnet:
         self.sess.run(tf.global_variables_initializer())
 
     def propagate(self, state):
-        return self.sess.run(self.y, feed_dict={self.x: state})[0]
+        return self.sess.run(self.y, feed_dict={self.x: state})

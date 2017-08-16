@@ -1,17 +1,12 @@
 import random
 import numpy as np
 
-# propagate the network with state and get the max output value
-def max_q(q, encoded_state):
-    q_values = q.propagate(encoded_state)
-    return max(q_values)
-
 # select an epsilon greedy action
 def choose_epsilon_greedy_action(q, encoded_state, epsilon):
     if random.random() < epsilon:
         return random.choice(range(q.num_outputs))
     else:
-        action_values = q.propagate(encoded_state)
+        action_values = q.propagate(encoded_state)[0]
         return np.argmax(action_values)
 
 # generate an episode using epsilon greedy actions
@@ -29,7 +24,7 @@ def generate_epsilon_greedy_episode(env, q, state_encoder, epsilon=0.1):
     return episode
 
 # determine post-training performance
-def estimate_performance(env, q, state_encoder, num_episodes=100):
+def estimate_performance(env, q, state_encoder, num_episodes=10):
     episode_lengths = [len(generate_epsilon_greedy_episode(env, q, state_encoder)) \
                        for _ in range(num_episodes)]
     avg = sum(episode_lengths) / num_episodes
