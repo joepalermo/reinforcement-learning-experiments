@@ -23,7 +23,7 @@ class GridworldChase(gym.Env):
         'render.modes': ['human'],
     }
 
-    def __init__(self, x_lim, y_lim, walls=[], kings_moves=False, p_goal_move=1, goal_random_start=False):
+    def __init__(self, x_lim, y_lim, walls=[], kings_moves=False, p_goal_move=1, agent_random_start=False, goal_random_start=False):
         # set base attributes of the maze
         self.x_lim = x_lim
         self.y_lim = y_lim
@@ -43,6 +43,7 @@ class GridworldChase(gym.Env):
         # set other attributes
         self.kings_moves = kings_moves
         self.p_goal_move = p_goal_move
+        self.agent_random_start = agent_random_start
         self.goal_random_start = goal_random_start
         # reset state
         self._seed()
@@ -57,7 +58,10 @@ class GridworldChase(gym.Env):
         return [seed]
 
     def _reset(self):
-        self.agent = self.reset_coordinates()
+        if self.agent_random_start:
+            self.agent = self.reset_coordinates(fixed=None)
+        else:
+            self.agent = self.reset_coordinates()
         if self.goal_random_start:
             self.goal = self.reset_coordinates(fixed=None)
         else:
