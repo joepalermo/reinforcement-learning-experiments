@@ -23,7 +23,7 @@ class GridworldChase(gym.Env):
         'render.modes': ['human'],
     }
 
-    def __init__(self, x_lim, y_lim, walls=[], kings_moves=False):
+    def __init__(self, x_lim, y_lim, walls=[], kings_moves=False, p_goal_move=1):
         # set base attributes of the maze
         self.x_lim = x_lim
         self.y_lim = y_lim
@@ -97,19 +97,17 @@ class GridworldChase(gym.Env):
                 self.apply_action((0, -1))
             elif action == 3:
                 self.apply_action((-1, 0))
-        # move the goal
-        goal_action = random.choice(range(5))
-        if goal_action == 0:
-            self.apply_action((0, 1), entity='goal')
-        elif goal_action == 1:
-            self.apply_action((1, 0), entity='goal')
-        elif goal_action == 2:
-            self.apply_action((0, -1), entity='goal')
-        elif goal_action == 3:
-            self.apply_action((-1, 0), entity='goal')
-        # null action
-        elif goal_action == 4:
-            pass
+        # if probability p, the goal moves
+        if random.random() < p_goal_move:
+            goal_action = random.choice(range(4))
+            if goal_action == 0:
+                self.apply_action((0, 1), entity='goal')
+            elif goal_action == 1:
+                self.apply_action((1, 0), entity='goal')
+            elif goal_action == 2:
+                self.apply_action((0, -1), entity='goal')
+            elif goal_action == 3:
+                self.apply_action((-1, 0), entity='goal')
         # determine whether the goal state has been reached
         if self.state['agent'] == self.state['goal']:
             reward = 1
