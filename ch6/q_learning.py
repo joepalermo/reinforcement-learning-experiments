@@ -4,18 +4,18 @@ from os.path import abspath, join, dirname
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 sys.path.insert(1, abspath(join(dirname(__file__), '../environments')))
 
-import time
 from utilities import init_state_action_map, \
                       choose_epsilon_greedy_action, \
                       choose_greedy_action, \
                       max_q, \
                       generate_random_episode, \
-                      generate_epsilon_greedy_episode
+                      generate_epsilon_greedy_episode, \
+                      estimate_performance, \
+                      visualize_performance
 from Gridworld import Gridworld
 
-def q_learning(env, epsilon=0.1, alpha=0.5, gamma=1):
-    q = init_state_action_map(env)
-    for i in range(1000):
+def q_learning(env, q, epsilon=0.1, alpha=0.5, gamma=1, num_episodes=1000):
+    for _ in range(num_episodes):
         state = env.reset()
         done = False
         while not done:
@@ -27,37 +27,22 @@ def q_learning(env, epsilon=0.1, alpha=0.5, gamma=1):
     return q
 
 def main():
-    x_limit = 8
-    y_limit = 4
     goals = [(7,0)]
     anti_goals = [(1,0),(2,0),(3,0),(4,0),(5,0),(6,0)]
+    env = Gridworld(8, 4, goals, anti_goals)
 
-    #env = Gridworld(x_limit, y_limit, goals, anti_goals, kings_moves=True, wind=[0,0,0,1,1,1,2,2,1,0], stochastic_wind=False)
-    env = Gridworld(x_limit, y_limit, goals, anti_goals, kings_moves=False)
-    num_episodes = 1000
-
-    # determine the baseline performance that results from taking random moves
-    avg = sum([len(generate_random_episode(env)) for _ in range(num_episodes)]) / float(num_episodes)
-    print("baseline random performance: " + str(avg))
+    # init q and get baseline random performance
+    q = init_state_action_map(env)
+    estimate_performance(env, q, 1)
 
     # learn q
     print("running q-learning...")
-    q = q_learning(env)
+    q = q_learning(env, q)
     print("q-learning complete")
 
     # determine post-training performance
-    avg = sum([len(generate_epsilon_greedy_episode(env, q)) for _ in range(num_episodes)]) / float(num_episodes)
-    print("post learning performance: " + str(avg))
-
-    # visualize post-training episode
-    state = env.reset()
-    while True:
-        env.render()
-        time.sleep(0.25)
-        action = choose_greedy_action(q, state)
-        state, _, done, _ = env.step(action) # take a random action
-        if done:
-            env.render(close=True)
-            break
-
-main()
+    estimate_performance(env, q, 0.01)
+    visualize_performance(env, q)
+    
+if __name__ == '__main__':
+    main()

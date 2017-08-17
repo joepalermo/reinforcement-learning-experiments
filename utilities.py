@@ -1,3 +1,4 @@
+import time
 import random
 import numpy as np
 
@@ -327,3 +328,23 @@ def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_pol
         # if the current action is taken now, then its probability under
         # the target policy is 1
         w *= 1.0 / behavior_policy[state][action]
+
+# other utilities --------------------------------------------------------------
+
+def estimate_performance(env, q, epsilon, num_episodes=10):
+    episode_lengths = [len(generate_epsilon_greedy_episode(env, q, epsilon)) \
+                       for _ in range(num_episodes)]
+    avg = sum(episode_lengths) / num_episodes
+    print("average episode length: {}".format(avg))
+
+def visualize_performance(env, q, delay=0.25):
+    # visualize post-training episode
+    state = env.reset()
+    while True:
+        env.render()
+        time.sleep(delay)
+        action = choose_greedy_action(q, state)
+        state, _, done, _ = env.step(action)
+        if done:
+            env.render(close=True)
+            break
