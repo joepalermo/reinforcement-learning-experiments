@@ -32,10 +32,9 @@ def construct_mini_batch(q, replay_memory, mbs, gamma):
         rewards.append(reward)
     xs, xps, actions, rewards = np.array(xs), np.array(xps), np.array(actions), np.array(rewards)
     # construct ys
-    ys_base = np.zeros((mbs, num_actions))
-    az = np.argmax(actions, axis=1)
-    ys_base[np.arange(mbs), az] = np.ones(mbs)
-    ys_values = rewards + gamma * np.max(q.propagate(xps), axis=1) - q.propagate(xs)[np.arange(mbs), az]
+    ys_base = actions.copy()
+    a_indices = np.argmax(actions, axis=1)
+    ys_values = rewards + gamma * np.max(q.propagate(xps), axis=1) - q.propagate(xs)[np.arange(mbs), a_indices]
     ys_values = np.reshape(ys_values, (mbs, 1))
     ys = ys_base * ys_values
     return xs, ys, actions
@@ -65,26 +64,26 @@ def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, e
 
 def main():
     # define hyperparameters
-    num_episodes = 50
-    mbs = 256
-    epsilon = 0.2
-    gamma = 1
-    eta = 0.01
+    num_episodes = 150
+    mbs = 64
+    epsilon = 1
+    gamma = 0.9
+    eta = 0.1
 
     # create an env
-    env = GridworldChase(5, 5)
+    env = GridworldChase(3, 3, p_goal_move=0, goal_random_start=True)
 
     # initialize a q-network
     q = Qnet(env)
 
     # estimate its performance against the environment
-    estimate_performance(env, q, state_encoder)
+    estimate_performance(env, q, state_encoder, epsilon=1)
 
     # train it
-    q_network_learning(env, q, num_episodes=num_episodes, mbs=100, epsilon=epsilon, gamma=gamma, eta=eta)
+    q_network_learning(env, q, num_episodes, mbs, epsilon, gamma, eta)
 
     # estimate its performance against the environment
-    estimate_performance(env, q, state_encoder)
+    estimate_performance(env, q, state_encoder, epsilon=0.01)
 
 
     # demonstrate learning
