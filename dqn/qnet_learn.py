@@ -85,7 +85,6 @@ def main():
     # estimate its performance against the environment
     estimate_performance(env, q, state_encoder, epsilon=0.01)
 
-
     # demonstrate learning
     state = env.reset()
     while True:
@@ -98,5 +97,5 @@ def main():
             env.render(close=True)
             break
 
-
-main()
+if __name__ == '__main__':
+    main()
