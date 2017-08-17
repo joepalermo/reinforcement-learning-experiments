@@ -23,7 +23,7 @@ class GridworldChase(gym.Env):
         'render.modes': ['human'],
     }
 
-    def __init__(self, x_lim, y_lim, walls=[], kings_moves=False, p_goal_move=1):
+    def __init__(self, x_lim, y_lim, walls=[], kings_moves=False, p_goal_move=1, goal_random_start=False):
         # set base attributes of the maze
         self.x_lim = x_lim
         self.y_lim = y_lim
@@ -40,8 +40,10 @@ class GridworldChase(gym.Env):
             self.action_space = spaces.Discrete(8)
         else:
             self.action_space = spaces.Discrete(4)
-        # set flags
+        # set other attributes
         self.kings_moves = kings_moves
+        self.p_goal_move = p_goal_move
+        self.goal_random_start = goal_random_start
         # reset state
         self._seed()
         self._reset()
@@ -56,7 +58,10 @@ class GridworldChase(gym.Env):
 
     def _reset(self):
         self.agent = self.reset_coordinates()
-        self.goal = self.reset_coordinates(fixed=(self.x_lim-1, self.y_lim-1))
+        if self.goal_random_start:
+            self.goal = self.reset_coordinates(fixed=None)
+        else:
+            self.goal = self.reset_coordinates(fixed=(self.x_lim-1, self.y_lim-1))
         self.state = {'agent': self.agent, 'goal': self.goal}
         return self._get_obs()
 
@@ -98,7 +103,7 @@ class GridworldChase(gym.Env):
             elif action == 3:
                 self.apply_action((-1, 0))
         # if probability p, the goal moves
-        if random.random() < p_goal_move:
+        if random.random() < self.p_goal_move:
             goal_action = random.choice(range(4))
             if goal_action == 0:
                 self.apply_action((0, 1), entity='goal')
