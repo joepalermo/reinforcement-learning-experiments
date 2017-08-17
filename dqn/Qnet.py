@@ -27,18 +27,18 @@ class Qnet:
     def __init__(self, env):
 
         self.env = env
-        self.num_outputs = env.action_space.n
+        self.num_actions = env.action_space.n
 
         # define the network inputs
         self.x = tf.placeholder(tf.float32, [None, env.x_lim, env.y_lim, 2])
-        self.y_ = tf.placeholder(tf.float32, [None, self.num_outputs])
-        self.a = tf.placeholder(tf.float32, [None, self.num_outputs])
+        self.y_ = tf.placeholder(tf.float32, [None, self.num_actions])
+        self.a = tf.placeholder(tf.float32, [None, self.num_actions])
         self.eta = tf.placeholder(tf.float32)
 
         # reshaping should be unnecessary
         # inpt = tf.reshape(x, [None, env.x_lim, env.y_lim, 2])
 
-        # First convolutional layer: full kernal with 2 to 40 channels
+        # First convolutional layer: valid kernal with 2 to 40 channels
         W_conv1 = weight_variable([env.x_lim, env.y_lim, 2, 40])
         b_conv1 = bias_variable([40])
         a_conv1 = tf.nn.relu(conv2d(self.x, W_conv1) + b_conv1)
@@ -50,8 +50,8 @@ class Qnet:
         a_fc1 = tf.nn.relu(tf.matmul(a_conv1_flat, W_fc1) + b_fc1)
 
         # Map the 100 features into the action space
-        W_fc2 = weight_variable([100, self.num_outputs])
-        b_fc2 = bias_variable([self.num_outputs])
+        W_fc2 = weight_variable([100, self.num_actions])
+        b_fc2 = bias_variable([self.num_actions])
         self.y = tf.matmul(a_fc1, W_fc2) + b_fc2
 
         # mask output

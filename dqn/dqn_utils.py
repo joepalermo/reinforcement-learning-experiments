@@ -4,13 +4,13 @@ import numpy as np
 # select an epsilon greedy action
 def choose_epsilon_greedy_action(q, encoded_state, epsilon):
     if random.random() < epsilon:
-        return random.choice(range(q.num_outputs))
+        return random.choice(range(q.num_actions))
     else:
         action_values = q.propagate(encoded_state)[0]
         return np.argmax(action_values)
 
 # generate an episode using epsilon greedy actions
-def generate_epsilon_greedy_episode(env, q, state_encoder, epsilon=0.1):
+def generate_epsilon_greedy_episode(env, q, state_encoder, epsilon):
     episode = []
     state = env.reset()
     done = False
@@ -24,8 +24,8 @@ def generate_epsilon_greedy_episode(env, q, state_encoder, epsilon=0.1):
     return episode
 
 # determine post-training performance
-def estimate_performance(env, q, state_encoder, num_episodes=10):
-    episode_lengths = [len(generate_epsilon_greedy_episode(env, q, state_encoder)) \
+def estimate_performance(env, q, state_encoder, epsilon=0.1, num_episodes=25):
+    episode_lengths = [len(generate_epsilon_greedy_episode(env, q, state_encoder, epsilon)) \
                        for _ in range(num_episodes)]
     avg = sum(episode_lengths) / num_episodes
     print("average episode length: {}".format(avg))
