@@ -343,7 +343,7 @@ def visualize_performance(env, q, delay=0.25):
     while True:
         env.render()
         time.sleep(delay)
-        action = choose_greedy_action(q, state)
+        action = choose_epsilon_greedy_action(q, state, 0.01)
         state, _, done, _ = env.step(action)
         if done:
             env.render(close=True)

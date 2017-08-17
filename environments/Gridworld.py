@@ -26,7 +26,7 @@ class Gridworld(gym.Env):
             self.action_space = spaces.Discrete(8)
         else:
             self.action_space = spaces.Discrete(4)
-        # set wind
+        # set wind, example: wind=[0,0,0,1,1,1,2,2,1,0]
         if wind:
             self.wind = wind
         else:
