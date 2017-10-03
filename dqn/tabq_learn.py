@@ -19,13 +19,13 @@ import numpy as np
 
 def main():
     # define hyperparameters
-    num_episodes = 8000
+    num_episodes = 1000
     epsilon = 1
     gamma = 0.9
     alpha = 0.1
 
     # create an env
-    env = GridworldChase(40, 40, p_goal_move=1, agent_random_start=True, goal_random_start=True)
+    env = GridworldChase(12, 12, p_goal_move=1, agent_random_start=True, goal_random_start=True)
 
     # init q and get baseline random performance
     q = init_state_action_map(env)

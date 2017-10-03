@@ -1,6 +1,31 @@
 import random
 import numpy as np
 
+# A data structure to hold training steps for subsequent replay
+# holds the most recent self.max_size training steps
+class ReplayMemory:
+
+    def __init__(self, max_size=1000):
+        # once ReplayMemory is full, self.i determines where to add new values
+        self.i = 0
+        self.ls = []
+        self.max_size = max_size
+
+    def __getitem__(self, slice_obj):
+        return self.ls[slice_obj]
+
+    def __len__(self):
+        return len(self.ls)
+
+    def add(self, value):
+        if len(self.ls) < self.max_size: # ReplayMemory isn't full
+            self.ls.append(value)
+        else:
+            self.ls[self.i] = value
+            self.i += 1
+            if self.i == self.max_size:
+                self.i = 0 # reset index back to 0 when it reaches max size
+
 # select an epsilon greedy action
 def choose_epsilon_greedy_action(q, encoded_state, epsilon):
     if random.random() < epsilon:

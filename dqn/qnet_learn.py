@@ -5,10 +5,12 @@ sys.path.insert(1, abspath(join(dirname(__file__), '../environments')))
 
 import time
 import random
+import numpy as np
 from Qnet import Qnet
 from GridworldChase import GridworldChase, state_encoder
-from dqn_utils import choose_epsilon_greedy_action, estimate_performance
-import numpy as np
+from dqn_utils import ReplayMemory, \
+                      choose_epsilon_greedy_action, \
+                      estimate_performance
 
 # construct a mini-batch from the replay memory
 def construct_mini_batch(q, replay_memory, mbs, gamma):
@@ -41,7 +43,7 @@ def construct_mini_batch(q, replay_memory, mbs, gamma):
 
 # learn a q-network
 def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, eta=0.1):
-    replay_memory = []
+    replay_memory = ReplayMemory()
     for i in range(num_episodes):
         print(i)
         state = env.reset()
@@ -52,7 +54,7 @@ def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, e
             (next_state, reward, done, _) = env.step(action)
             # store step data in replay memory
             step_data = (state, action, reward, next_state)
-            replay_memory.append(step_data)
+            replay_memory.add(step_data)
             # train on a mini-batch extracted from replay_memory
             if len(replay_memory) > mbs:
                 xs, ys, actions = construct_mini_batch(q, replay_memory, mbs, gamma)
@@ -64,14 +66,14 @@ def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, e
 
 def main():
     # define hyperparameters
-    num_episodes = 150
-    mbs = 64
-    epsilon = 1
+    num_episodes = 40
+    mbs = 128
+    epsilon = 0.5
     gamma = 0.9
-    eta = 0.1
+    eta = 0.5
 
     # create an env
-    env = GridworldChase(3, 3, p_goal_move=0, goal_random_start=True)
+    env = GridworldChase(8, 8, p_goal_move=0.5, goal_random_start=True)
 
     # initialize a q-network
     q = Qnet(env)
@@ -83,15 +85,15 @@ def main():
     q_network_learning(env, q, num_episodes, mbs, epsilon, gamma, eta)
 
     # estimate its performance against the environment
-    estimate_performance(env, q, state_encoder, epsilon=0.01)
+    estimate_performance(env, q, state_encoder, epsilon=0.05)
 
     # demonstrate learning
     state = env.reset()
     while True:
         env.render()
-        time.sleep(0.1)
+        time.sleep(0.25)
         encoded_state = state_encoder(env, state)
-        action = choose_epsilon_greedy_action(q, encoded_state, 0.05)
+        action = choose_epsilon_greedy_action(q, encoded_state, 0.1)
         state, reward, done, _ = env.step(action)
         if done:
             env.render(close=True)
