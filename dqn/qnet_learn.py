@@ -35,7 +35,6 @@ def construct_mini_batch(q, replay_memory, mbs, gamma):
     xs, xps, actions, rewards = np.array(xs), np.array(xps), np.array(actions), np.array(rewards)
     # construct ys
     ys_base = actions.copy()
-    a_indices = np.argmax(actions, axis=1)
     ys_values = rewards + gamma * np.max(q.propagate(xps), axis=1)
     ys_values = np.reshape(ys_values, (mbs, 1))
     ys = ys_base * ys_values
