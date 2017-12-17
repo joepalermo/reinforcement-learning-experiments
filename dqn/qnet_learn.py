@@ -36,7 +36,7 @@ def construct_mini_batch(q, replay_memory, mbs, gamma):
     # construct ys
     ys_base = actions.copy()
     a_indices = np.argmax(actions, axis=1)
-    ys_values = rewards + gamma * np.max(q.propagate(xps), axis=1) - q.propagate(xs)[np.arange(mbs), a_indices]
+    ys_values = rewards + gamma * np.max(q.propagate(xps), axis=1)
     ys_values = np.reshape(ys_values, (mbs, 1))
     ys = ys_base * ys_values
     return xs, ys, actions
@@ -66,14 +66,14 @@ def q_network_learning(env, q, num_episodes=10, mbs=100, epsilon=0.1, gamma=1, e
 
 def main():
     # define hyperparameters
-    num_episodes = 40
+    num_episodes = 100
     mbs = 128
-    epsilon = 0.5
+    epsilon = 0.9
     gamma = 0.9
-    eta = 0.5
+    eta = 0.2
 
     # create an env
-    env = GridworldChase(8, 8, p_goal_move=0.5, goal_random_start=True)
+    env = GridworldChase(3, 3, p_goal_move=0.5, agent_random_start=True, goal_random_start=True)
 
     # initialize a q-network
     q = Qnet(env)
