@@ -33,7 +33,6 @@ def init_model(env, base_reward):
             model[(state, action)] = (next_state, base_reward)
     return model
 
-
 # initialize a random deterministic policy
 def init_deterministic_policy(env):
     policy = dict()
@@ -330,6 +329,12 @@ def fine_grained_off_policy_iteration(episode, q, c, target_policy, behavior_pol
         w *= 1.0 / behavior_policy[state][action]
 
 # other utilities --------------------------------------------------------------
+
+# softmax over 1-d array
+def softmax(arr):
+    max_arr = np.max(arr)
+    denominator = sum([np.exp(value - max_arr) for value in arr])
+    return np.array([np.exp(value - max_arr)/denominator for value in arr])
 
 def estimate_performance(env, q, epsilon, num_episodes=10):
     episode_lengths = [len(generate_epsilon_greedy_episode(env, q, epsilon)) \
